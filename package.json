@@ -1,6 +1,6 @@
 {
   "name": "ean-pro",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {
