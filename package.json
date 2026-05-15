@@ -1,6 +1,6 @@
 {
   "name": "ean-pro",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {
@@ -83,9 +83,6 @@
     },
     "dmg": {
       "artifactName": "EAN-Pro-Setup-${version}.${ext}"
-    },
-    "zip": {
-      "artifactName": "EAN-Pro-Portable-${version}.${ext}"
     }
   }
 }
