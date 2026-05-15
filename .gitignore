@@ -1,0 +1,12 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+temp/
+assets/gs/bin/
+assets/gs/lib/
+assets/gs/share/
+# Non ignoriamo gs se vogliamo caricarlo (ma di solito sono file grandi)
+# Per ora ignoriamo la cartella gs di Windows che è già lì, 
+# ma terremo traccia della struttura.

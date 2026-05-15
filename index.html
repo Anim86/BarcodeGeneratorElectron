@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAN Pro — Generatore Codici a Barre</title>
+    <meta name="description" content="Strumento professionale per la generazione di codici a barre EAN-13 e EAN-8. Export vettoriale e raster ad alta risoluzione.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+    <div id="app" class="app">
+
+        <!-- ─── Sidebar: opzioni export ─── -->
+        <aside class="sidebar" id="sidebar">
+            <header class="sidebar__brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+                <span>EAN Pro</span>
+                <small>v1.0</small>
+            </header>
+
+            <div class="sidebar__body">
+
+
+                <!-- 1b. I Miei Preset -->
+                <fieldset class="fieldset">
+                    <legend>I Miei Preset</legend>
+                    <div id="custom-presets-list" class="preset-buttons mb-10">
+                        <!-- Preset salvati dall'utente -->
+                    </div>
+                    <div class="field-row">
+                        <input type="text" id="new-preset-name" placeholder="Nome preset..." class="input-sm flex-grow">
+                        <button id="save-preset-btn" class="btn btn--primary btn--sm">Salva</button>
+                    </div>
+                </fieldset>
+
+                <!-- 2. Configurazione Export -->
+                <fieldset class="fieldset">
+                    <legend>Configurazione Export</legend>
+                    <div class="field">
+                        <label for="format-select">Formato File</label>
+                        <select id="format-select">
+                            <option value="svg">SVG (Vettoriale standard)</option>
+                            <option value="png" selected>PNG (Immagine Raster)</option>
+                            <option value="jpg">JPG (Immagine Raster)</option>
+                            <option value="tiff">TIFF (Professional Raster)</option>
+                            <option value="eps">EPS (Vettoriale CMYK)</option>
+                            <option value="pdf">PDF/X-1a (Prestampista)</option>
+                        </select>
+                        <p id="format-notice" class="field-notice" style="display:none"></p>
+                        <p id="cmyk-raster-warning" class="field-notice field-notice--warning" style="display:none">
+                            <strong>Nota:</strong> I formati PNG e SVG non supportano nativamente lo spazio colore CMYK. Verranno generati in RGB di default.
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label for="color-select">Metodo Colore</label>
+                        <select id="color-select">
+                            <option value="cmyk">CMYK (Intento Prestampa)</option>
+                            <option value="rgb">RGB (Digitale)</option>
+                            <option value="gray">Scala di Grigi</option>
+                        </select>
+                    </div>
+                </fieldset>
+
+                <!-- 3. Colori e Personalizzazione -->
+                <fieldset class="fieldset">
+                    <legend>Colori e Personalizzazione</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="color-bars">Colore Barre</label>
+                            <input type="color" id="color-bars" value="#000000">
+                        </div>
+                        <div class="field" id="bg-color-field">
+                            <label for="color-bg">Colore Sfondo</label>
+                            <input type="color" id="color-bg" value="#ffffff">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="checkbox-field" for="bg-transparent-toggle">
+                            <input type="checkbox" id="bg-transparent-toggle">
+                            <span class="checkmark"></span>
+                            Sfondo trasparente <small class="field-hint">(solo SVG/PNG)</small>
+                        </label>
+                    </div>
+                    <div class="field mt-10">
+                        <label class="checkbox-field" for="force-k100-toggle">
+                            <input type="checkbox" id="force-k100-toggle" checked>
+                            <span class="checkmark"></span>
+                            Forza Nero K100 <small class="field-hint">(Scala di Grigio)</small>
+                        </label>
+                    </div>
+                    <div id="color-info-box" class="color-info-box" style="display:none">
+                        <div id="cmyk-values" class="cmyk-values"></div>
+                        <p id="contrast-warning" class="field-notice field-notice--warning" style="display:none"></p>
+                    </div>
+                </fieldset>
+
+                <!-- 4. Dimensioni e Risoluzione -->
+                <fieldset class="fieldset">
+                    <div class="field-header">
+                        <legend>Dimensioni e Risoluzione</legend>
+                        <select id="unit-select" class="unit-toggle-select">
+                            <option value="mm" selected>Unità: mm</option>
+                            <option value="px">Unità: px</option>
+                        </select>
+                    </div>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="width-input">Larghezza</label>
+                            <div class="input-unit">
+                                <input type="number" id="width-input" value="37.29" step="0.01" min="5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="height-input">Altezza</label>
+                            <div class="input-unit">
+                                <input type="number" id="height-input" value="25.93" step="0.01" min="5">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="gs1-compliance" class="compliance-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Dimensioni conformi GS1</span>
+                    </div>
+                    <div class="field mt-10">
+                        <label for="dpi-input">Risoluzione <small class="field-hint">(solo raster)</small></label>
+                        <div class="input-unit">
+                            <input type="number" id="dpi-input" value="300" step="1" min="72" max="1200">
+                            <span class="unit-label">DPI</span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- 5. Area di Abbondanza (Quiet Zone) -->
+                <fieldset class="fieldset">
+                    <legend>Area di Abbondanza</legend>
+                    <div class="field-row">
+                        <div class="field">
+                            <label for="qz-h-input">Abbondanza Orizzontale</label>
+                            <div class="input-unit">
+                                <input type="number" id="qz-h-input" value="3.63" step="0.01" min="0">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="qz-v-input">Abbondanza Verticale</label>
+                            <div class="input-unit">
+                                <input type="number" id="qz-v-input" value="1.00" step="0.01" min="0">
+                                <span class="unit-label">mm</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p id="qz-warning" class="field-notice field-notice--warning" style="display:none"></p>
+                    <div class="field mt-10">
+                        <label class="checkbox-field" for="include-qz-toggle">
+                            <input type="checkbox" id="include-qz-toggle" checked>
+                            <span class="checkmark"></span>
+                            Includi abbondanza nell'esportazione
+                        </label>
+                    </div>
+                </fieldset>
+
+                <!-- 6. Testo e HRI -->
+                <fieldset class="fieldset">
+                    <legend>Testo e HRI</legend>
+                    <div class="field">
+                        <label class="checkbox-field" for="hri-toggle">
+                            <input type="checkbox" id="hri-toggle" checked>
+                            <span class="checkmark"></span>
+                            Mostra testo leggibile (HRI)
+                        </label>
+                    </div>
+                    <div class="field mt-10">
+                        <label class="checkbox-field" for="text-to-path-toggle">
+                            <input type="checkbox" id="text-to-path-toggle" checked>
+                            <span class="checkmark"></span>
+                            Testi in tracciato <small class="field-hint">(solo PDF/EPS)</small>
+                        </label>
+                    </div>
+                    <div id="hri-options-wrap">
+                        <div class="field-row">
+                            <div class="field">
+                                <label for="hri-font">Carattere</label>
+                                <select id="hri-font">
+                                    <option value="OCR-B">OCR-B (Standard)</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                    <option value="Arial">Arial</option>
+                                    <option value="custom">Font Personale...</option>
+                                </select>
+                                <input type="file" id="hri-font-file" accept=".ttf,.otf" style="display:none" class="mt-5">
+                            </div>
+                            <div class="field">
+                                <label for="hri-size">Dimensione</label>
+                                <div class="input-unit">
+                                    <input type="number" id="hri-size" value="12" step="0.5" min="4">
+                                    <span class="unit-label">pt</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="hri-position">Posizione</label>
+                            <select id="hri-position">
+                                <option value="bottom">Sotto le barre</option>
+                                <option value="top">Sopra le barre</option>
+                                <option value="incorporated">Incorporato</option>
+                            </select>
+                        </div>
+                        <div class="field" id="hri-format-field">
+                            <label class="checkbox-field" for="hri-format-toggle">
+                                <input type="checkbox" id="hri-format-toggle" checked>
+                                <span class="checkmark"></span>
+                                Formato standard GS1 (1 · 6 · 6)
+                            </label>
+                            <p class="field-notice field-notice--info mt-5">
+                                Separa il codice come da standard GS1: prima cifra, sei cifre sinistra, sei cifre destra. 
+                                Se disattivato, il codice appare come stringa continua.
+                            </p>
+                            <div class="hri-example-box mt-5">
+                                <div class="hri-example">
+                                    <span class="hri-example__label">Attivo:</span>
+                                    <code class="hri-example__code">4 · 006381 · 226826</code>
+                                </div>
+                                <div class="hri-example">
+                                    <span class="hri-example__label">Non attivo:</span>
+                                    <code class="hri-example__code">4006381226826</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+
+            <footer class="sidebar__footer">
+                <button id="theme-toggle" class="btn-icon" title="Cambia tema">
+                    <svg id="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                    <svg id="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <span class="sidebar__version">Client-side · Nessun dato inviato</span>
+            </footer>
+        </aside>
+
+        <!-- ─── Area principale ─── -->
+        <main class="main">
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="toolbar__input-group">
+                    <label for="manual-input" class="sr-only">Codice EAN</label>
+                    <input type="text" id="manual-input" class="toolbar__input" placeholder="Inserisci uno o più codici EAN (es: 1234567890123, 12345678)" autocomplete="off" spellcheck="false">
+
+                </div>
+
+                <div class="toolbar__separator"></div>
+
+                <label for="file-upload" class="btn btn--outline" tabindex="0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Importa file
+                    <input type="file" id="file-upload" accept=".csv,.xlsx" hidden>
+                </label>
+
+                <div class="toolbar__spacer"></div>
+
+                <div id="batch-summary" class="toolbar__summary" style="display:none">
+                    <span id="batch-count-valid" class="summary-chip summary-chip--ok">0 validi</span>
+                    <span id="batch-count-invalid" class="summary-chip summary-chip--err">0 errori</span>
+                </div>
+            </div>
+
+            <!-- Workspace -->
+            <div class="workspace">
+
+                <!-- Preview -->
+                <section class="panel preview-panel" aria-label="Anteprima barcode">
+                    <div class="panel__head">
+                        <h2 class="panel__title">Anteprima</h2>
+                        <span id="preview-status" class="badge badge--neutral">In attesa</span>
+                    </div>
+                    <div class="preview__canvas">
+                        <div id="barcode-preview-container" class="preview__inner">
+                            <div class="preview__empty">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".35"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+                                <p>Inserisci un codice EAN o importa un file</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel__foot">
+                        <button id="download-preview-btn" class="btn btn--primary" disabled style="flex: 1;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Esporta Barcode
+                        </button>
+                        <button id="reset-all-btn" class="btn btn--outline" style="margin-left: 10px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            Reset
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Results -->
+                <section class="panel results-panel" aria-label="Risultati batch">
+                    <div class="panel__head">
+                        <h2 class="panel__title">Elaborazione Batch</h2>
+                        <button id="download-all-btn" class="btn btn--primary btn--sm" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Scarica Archivio ZIP
+                        </button>
+                    </div>
+                    <div class="results__table-wrap">
+                        <table class="results-table" id="results-table">
+                            <thead>
+                                <tr>
+                                    <th class="col-code">Codice EAN</th>
+                                    <th class="col-type">Tipo</th>
+                                    <th class="col-status">Stato</th>
+                                    <th class="col-error">Dettaglio</th>
+                                    <th class="col-action"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body"></tbody>
+                        </table>
+                        <div id="empty-state" class="empty-state">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                            <p>Nessun dato importato</p>
+                            <small>Carica un file CSV o XLSX per elaborare più codici</small>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modale selezione colonna -->
+    <div id="column-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal" role="dialog">
+            <h3 class="modal__title">Seleziona colonna EAN</h3>
+            <p class="modal__desc">Il file contiene più colonne. Indica quale contiene i codici a barre.</p>
+            <div id="column-list" class="modal__options"></div>
+            <button id="cancel-upload" class="btn btn--text">Annulla</button>
+        </div>
+    </div>
+
+
+    <!-- Libs -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+    <script src="src/barcode-service.js"></script>
+    <script src="src/export-bridge.js"></script>
+    <script src="src/app.js"></script>
+</body>
+</html>
