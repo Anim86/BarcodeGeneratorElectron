@@ -1,6 +1,6 @@
 {
   "name": "ean-demon-generator",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {
@@ -79,14 +79,26 @@
     },
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.productivity",
       "identity": null
     },
     "dmg": {
-      "artifactName": "EAN-Demon-Generator-Setup-${version}.${ext}"
+      "artifactName": "EAN-Demon-Generator-Setup-${version}-${arch}.${ext}"
     }
   }
 }
