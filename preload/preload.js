@@ -6,4 +6,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
    exportNative: (params) => ipcRenderer.invoke('export-native', params),
    exportNativeBatch: (data) => ipcRenderer.invoke('export-native-batch', data),
    checkGhostscript: () => ipcRenderer.invoke('check-ghostscript'),
+   installGhostscript: () => ipcRenderer.invoke('install-ghostscript'),
 });

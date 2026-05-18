@@ -76,6 +76,115 @@ ipcMain.handle('check-ghostscript', async () => {
     });
 });
 
+ipcMain.handle('install-ghostscript', async () => {
+    const isWin = process.platform === 'win32';
+    if (isWin) return false;
+
+    // Mostra un dialog nativo all'utente
+    const { response } = await dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Installa Automaticamente', 'Annulla'],
+        defaultId: 0,
+        title: 'Ghostscript Richiesto',
+        message: 'Ghostscript non è presente nel tuo sistema.',
+        detail: 'Questa libreria è necessaria per esportare nei formati professionali EPS e PDF/X-1a.\n\nVuoi che EAN Pro apra il Terminale ed esegua l\'installazione automatica tramite Homebrew?'
+    });
+
+    if (response === 0) {
+        const scriptContent = `#!/bin/bash
+clear
+echo "=========================================================="
+echo "         EAN Pro - Installazione Assistita Ghostscript     "
+echo "=========================================================="
+echo ""
+
+# Verifica se Ghostscript è già installato
+if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/bin/gs ]; then
+    echo "[V] Ghostscript è già installato nel sistema!"
+    exit 0
+fi
+
+# Verifica Homebrew
+if ! command -v brew &> /dev/null && [ ! -f /opt/homebrew/bin/brew ] && [ ! -f /usr/local/bin/brew ]; then
+    echo "[!] Homebrew non è installato."
+    echo "    L'installazione di Homebrew richiede i primi privilegi di amministratore."
+    echo "    Inserisci la tua password di sistema quando richiesto e premi Invio."
+    echo ""
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    # Carica l'ambiente Homebrew nella sessione corrente
+    if [ -f /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -f /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+else
+    echo "[V] Homebrew rilevato."
+fi
+
+# Assicuriamoci che brew sia nel PATH anche se era preesistente ma non caricato
+if ! command -v brew &> /dev/null; then
+    if [ -f /opt/homebrew/bin/brew ]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -f /usr/local/bin/brew ]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+fi
+
+echo ""
+echo "⏳ Installazione di Ghostscript tramite Homebrew..."
+echo "----------------------------------------------------------"
+brew install ghostscript
+echo "----------------------------------------------------------"
+
+if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/bin/gs ]; then
+    echo ""
+    echo "✅ INSTALLAZIONE COMPLETATA CON SUCCESSO!"
+    echo "   Ora puoi tornare a EAN Pro ed esportare in EPS o PDF/X-1a."
+else
+    echo ""
+    echo "❌ Si è verificato un errore durante l'installazione."
+    echo "   Prova a eseguire manualmente nel terminale: brew install ghostscript"
+fi
+
+echo ""
+echo "Premi un tasto qualsiasi per chiudere questa finestra..."
+read -n 1 -s
+exit 0
+`;
+
+        try {
+            const tempScriptPath = path.join(app.getPath('temp'), 'eanpro_install_gs.sh');
+            fs.writeFileSync(tempScriptPath, scriptContent, { mode: 0o755 });
+
+            // Esegui tramite AppleScript nel Terminale visibile
+            const appleScript = \`tell application "Terminal" to do script "bash \\\\"\${tempScriptPath}\\\\""\`;
+            const activateScript = \`tell application "Terminal" to activate\`;
+
+            exec(\`osascript -e '\${appleScript}' -e '\${activateScript}'\`, (err) => {
+                if (err) {
+                    console.error('Errore durante l\\'apertura del Terminale:', err);
+                }
+            });
+
+            // Mostra messaggio di avviso che l'installazione è partita
+            await dialog.showMessageBox({
+                type: 'info',
+                buttons: ['OK'],
+                title: 'Installazione Avviata',
+                message: 'Il Terminale è stato aperto per avviare l\\'installazione.',
+                detail: 'Segui le istruzioni visibili nella finestra del Terminale (potrebbe essere necessario inserire la password di amministratore del Mac).\\n\\nUna volta completata l\\'installazione, potrai riprovare ad esportare liberamente!'
+            });
+            return true;
+        } catch (e) {
+            console.error('Errore durante la creazione dello script:', e);
+            dialog.showErrorBox('Errore di sistema', 'Impossibile avviare l\\'installatore: ' + e.message);
+        }
+    }
+
+    return false;
+});
+
 // --- Export Handler ---
 // --- Internal helper for the actual export logic ---
 async function performExport(svg, format, params, filePath) {

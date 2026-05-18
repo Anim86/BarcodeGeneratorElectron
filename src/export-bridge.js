@@ -25,10 +25,12 @@ window.ExportBridge = {
             const hasGS = await window.electronAPI.checkGhostscript();
             if (!hasGS) {
                 const platform = window.electronAPI.getPlatform();
-                const msg = platform === 'darwin' 
-                    ? 'Ghostscript non trovato. Installa via Homebrew: "brew install ghostscript"'
-                    : 'Ghostscript non trovato. Scarica l\'installer da: https://ghostscript.com/releases/gsdnld.html';
-                alert(msg);
+                if (platform === 'darwin') {
+                    // Avvia l'installazione assistita nativa
+                    await window.electronAPI.installGhostscript();
+                } else {
+                    alert('Ghostscript non trovato. Scarica l\'installer da: https://ghostscript.com/releases/gsdnld.html');
+                }
                 return;
             }
         }
