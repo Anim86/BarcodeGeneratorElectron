@@ -28,7 +28,7 @@ jobs:
           cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install --force
+        run: npm install
 
       - name: Build/Release Electron App
         uses: samuelmeuli/action-electron-builder@v1
