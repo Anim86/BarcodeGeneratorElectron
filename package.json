@@ -1,6 +1,6 @@
 {
   "name": "ean-demon-generator",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {
@@ -23,6 +23,9 @@
     "electron-builder": "^24.9.1"
   },
   "dependencies": {
+    "@img/sharp-darwin-arm64": "^0.33.2",
+    "@img/sharp-darwin-x64": "^0.33.2",
+    "@img/sharp-win32-x64": "^0.33.2",
     "jsdom": "^29.1.1",
     "pdfkit": "^0.18.0",
     "sharp": "^0.33.2",
