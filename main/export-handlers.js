@@ -1,4 +1,4 @@
-const { ipcMain, dialog, app } = require('electron');
+const { ipcMain, dialog, app, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
@@ -80,17 +80,33 @@ ipcMain.handle('install-ghostscript', async () => {
     const isWin = process.platform === 'win32';
     if (isWin) return false;
 
-    // Mostra un dialog nativo all'utente
+    // Mostra un dialog nativo all'utente con tre opzioni
     const { response } = await dialog.showMessageBox({
         type: 'question',
-        buttons: ['Installa Automaticamente', 'Annulla'],
+        buttons: ['Scarica Installatore .pkg (Consigliato)', 'Installa con Homebrew (Terminale)', 'Annulla'],
         defaultId: 0,
         title: 'Ghostscript Richiesto',
         message: 'Ghostscript non è presente nel tuo sistema.',
-        detail: 'Questa libreria è necessaria per esportare nei formati professionali EPS e PDF/X-1a.\n\nVuoi che EAN Pro apra il Terminale ed esegua l\'installazione automatica tramite Homebrew?'
+        detail: 'Questa libreria è necessaria per esportare nei formati professionali EPS e PDF/X-1a.\n\n' +
+                '• Metodo Consigliato (.pkg): Scarica e installa il pacchetto grafico ufficiale per Mac. È immediato e compatibile con tutte le versioni di macOS (incluso macOS 12 Monterey e precedenti).\n\n' +
+                '• Metodo Alternativo (Homebrew): Avvia l\'installazione automatica tramite Terminale (richiede privilegi amministratore).'
     });
 
     if (response === 0) {
+        // Scarica l'installatore .pkg ufficiale da Richard Koch
+        shell.openExternal('https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg');
+        
+        await dialog.showMessageBox({
+            type: 'info',
+            buttons: ['Ho capito'],
+            title: 'Download Avviato',
+            message: 'Il download di Ghostscript è stato avviato nel browser.',
+            detail: 'Fai doppio clic sul file scaricato (Ghostscript-10.07.0.pkg) per installarlo sul tuo Mac.\n\nUna volta completata l\'installazione, potrai riprovare ad esportare immediatamente!'
+        });
+        return true;
+    }
+
+    if (response === 1) {
         const scriptContent = `#!/bin/bash
 clear
 echo "=========================================================="
@@ -144,7 +160,9 @@ if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/
 else
     echo ""
     echo "❌ Si è verificato un errore durante l'installazione."
-    echo "   Prova a eseguire manualmente nel terminale: brew install ghostscript"
+    echo "   Se sei su macOS 12 (Monterey) o precedente, Homebrew potrebbe fallire."
+    echo "   Puoi installarlo facilmente scaricando e aprendo il pacchetto ufficiale:"
+    echo "   👉 https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg"
 fi
 
 echo ""
