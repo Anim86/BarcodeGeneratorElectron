@@ -30,6 +30,31 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Bundle Ghostscript for macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p assets/gs/mac
+          curl -L -o Ghostscript.pkg https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg
+          pkgutil --expand-full Ghostscript.pkg expanded_gs
+          GS_BIN=$(find expanded_gs -name "gs" -type f | head -n 1)
+          if [ -f "$GS_BIN" ]; then
+            cp "$GS_BIN" assets/gs/mac/gs
+            chmod +x assets/gs/mac/gs
+            echo "Ghostscript binary bundled successfully."
+          else
+            echo "Error: gs binary not found in package!"
+            exit 1
+          fi
+          INIT_FILE=$(find expanded_gs -name "gs_init.ps" -type f | head -n 1)
+          if [ ! -z "$INIT_FILE" ]; then
+            RESOURCE_DIR=$(dirname $(dirname "$INIT_FILE"))
+            echo "Resource dir found at $RESOURCE_DIR. Bundling it..."
+            rm -rf assets/gs/Resource
+            cp -R "$RESOURCE_DIR" assets/gs/Resource
+          else
+            echo "Warning: gs_init.ps not found. Using pre-existing resources."
+          fi
+
       - name: Build/Release Electron App
         uses: samuelmeuli/action-electron-builder@v1
         with:

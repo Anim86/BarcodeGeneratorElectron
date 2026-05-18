@@ -67,10 +67,21 @@ const getGSPath = () => {
     }
 };
 
+const getGSResourcePath = () => {
+    if (app.isPackaged) {
+        return path.join(process.resourcesPath, 'gs', 'Resource', 'Init');
+    }
+    return path.join(__dirname, '../assets/gs', 'Resource', 'Init');
+};
+
 ipcMain.handle('check-ghostscript', async () => {
     const gs = getGSPath();
+    const env = {
+        ...process.env,
+        GS_LIB: getGSResourcePath()
+    };
     return new Promise((resolve) => {
-        exec(`"${gs}" --version`, (err) => {
+        exec(`"${gs}" --version`, { env }, (err) => {
             resolve(!err);
         });
     });
@@ -438,8 +449,13 @@ async function handleEPSExport(svg, outputPath, params) {
     const textCmd = params.textToPath ? '-dNoOutputFonts ' : '';
     const cmd = `"${gs}" -q -dNOPAUSE -dBATCH -sDEVICE=eps2write ${colorCmd}${textCmd}-sOutputFile="${outputPath}" "${tempPdf}"`;
     
+    const env = {
+        ...process.env,
+        GS_LIB: getGSResourcePath()
+    };
+    
     return new Promise((resolve, reject) => {
-        exec(cmd, (err) => {
+        exec(cmd, { env }, (err) => {
             if (fs.existsSync(tempPdf)) fs.unlinkSync(tempPdf);
             if (err) reject(err);
             else resolve();
@@ -463,8 +479,13 @@ async function handlePDFXExport(svg, outputPath, params) {
     const textCmd = params.textToPath ? '-dNoOutputFonts ' : '';
     let cmd = `"${gs}" -dPDFX -dBATCH -dNOPAUSE -dNOOUTERSAVE -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress ${colorCmd}${textCmd}-sOutputFile="${outputPath}" "${tempPdf}"`;
     
+    const env = {
+        ...process.env,
+        GS_LIB: getGSResourcePath()
+    };
+    
     return new Promise((resolve, reject) => {
-        exec(cmd, (err) => {
+        exec(cmd, { env }, (err) => {
             if (fs.existsSync(tempPdf)) fs.unlinkSync(tempPdf);
             if (err) reject(err);
             else resolve();
