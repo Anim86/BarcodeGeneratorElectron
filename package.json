@@ -1,6 +1,6 @@
 {
   "name": "ean-demon-generator",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {

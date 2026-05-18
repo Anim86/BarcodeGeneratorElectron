@@ -36,6 +36,9 @@ jobs:
           mkdir -p assets/gs/mac
           curl -L -o Ghostscript.pkg https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg
           pkgutil --expand-full Ghostscript.pkg expanded_gs
+          echo "=== EXPANDED GS FILES ==="
+          find expanded_gs | head -n 100
+          echo "========================="
           GS_BIN=$(find expanded_gs -name "gs" -type f | head -n 1)
           if [ -f "$GS_BIN" ]; then
             cp "$GS_BIN" assets/gs/mac/gs
