@@ -515,19 +515,100 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function detectColumn(rows) {
-        const headers = rows[0];
-        const samples = rows.slice(1, 8);
-        const cols = headers.map((h, i) => {
-            let hits = 0;
-            samples.forEach(r => {
-                if (r[i] && /^\d{8,13}$/.test(String(r[i]).trim())) hits++;
-            });
-            return { i, name: h || `Colonna ${i + 1}`, hits };
+    function analyzeColumns(rows) {
+        if (!rows || rows.length === 0) return { eanCol: 0, nameCol: null, hasHeader: false };
+        
+        let maxCols = 0;
+        rows.slice(0, 15).forEach(row => {
+            if (row.length > maxCols) maxCols = row.length;
         });
-        const best = cols.sort((a, b) => b.hits - a.hits)[0];
-        if (best.hits >= 2) runBatch(rows, best.i);
-        else openColumnPicker(rows, cols);
+        
+        if (maxCols === 0) return { eanCol: 0, nameCol: null, hasHeader: false };
+        
+        const colStats = [];
+        for (let c = 0; c < maxCols; c++) {
+            colStats.push({ index: c, eanHits: 0, textHits: 0, total: 0 });
+        }
+        
+        const sampleRows = rows.slice(0, 15);
+        sampleRows.forEach(row => {
+            for (let c = 0; c < maxCols; c++) {
+                const val = String(row[c] || '').trim();
+                if (!val) continue;
+                colStats[c].total++;
+                if (/^\d{8,13}$/.test(val)) {
+                    colStats[c].eanHits++;
+                } else if (val.length > 1) {
+                    colStats[c].textHits++;
+                }
+            }
+        });
+        
+        let eanCol = 0;
+        let maxEanHits = -1;
+        colStats.forEach(stat => {
+            if (stat.eanHits > maxEanHits) {
+                maxEanHits = stat.eanHits;
+                eanCol = stat.index;
+            }
+        });
+        
+        let nameCol = null;
+        let maxTextHits = -1;
+        colStats.forEach(stat => {
+            if (stat.index !== eanCol && stat.textHits > maxTextHits && stat.textHits > 0) {
+                maxTextHits = stat.textHits;
+                nameCol = stat.index;
+            }
+        });
+        
+        if (nameCol === null && maxCols === 2) {
+            nameCol = eanCol === 0 ? 1 : 0;
+        }
+        
+        let hasHeader = false;
+        if (rows.length > 1) {
+            const firstEanVal = String(rows[0][eanCol] || '').trim();
+            if (firstEanVal && !/^\d{8,13}$/.test(firstEanVal)) {
+                hasHeader = true;
+            }
+            if (nameCol !== null) {
+                const firstNameVal = String(rows[0][nameCol] || '').trim().toLowerCase();
+                const keywords = ['nome', 'prodotto', 'articolo', 'descrizione', 'title', 'name', 'product', 'item', 'code', 'ean', 'barcode'];
+                if (keywords.some(kw => firstNameVal.includes(kw))) {
+                    hasHeader = true;
+                }
+            }
+        }
+        
+        return { eanCol, nameCol, hasHeader };
+    }
+
+    function detectColumn(rows) {
+        const analysis = analyzeColumns(rows);
+        let maxCols = 0;
+        rows.forEach(r => { if (r.length > maxCols) maxCols = r.length; });
+        
+        let totalEanHits = 0;
+        rows.slice(0, 15).forEach(r => {
+            if (r[analysis.eanCol] && /^\d{8,13}$/.test(String(r[analysis.eanCol]).trim())) {
+                totalEanHits++;
+            }
+        });
+
+        if (totalEanHits >= 1) {
+            runBatch(rows);
+        } else {
+            const headers = rows[0];
+            const cols = [];
+            for (let i = 0; i < maxCols; i++) {
+                cols.push({
+                    i,
+                    name: (headers && headers[i]) ? String(headers[i]) : `Colonna ${i + 1}`
+                });
+            }
+            openColumnPicker(rows, cols);
+        }
     }
 
     function openColumnPicker(rows, cols) {
@@ -550,26 +631,53 @@ document.addEventListener('DOMContentLoaded', () => {
         el.cancelUpload.onclick = () => el.columnModal.setAttribute('aria-hidden', 'true');
     }
 
-    function runBatch(data, colIdx) {
+    function runBatch(data, forceEanColIdx = null) {
         batchData = [];
         if (el.resultsBody) el.resultsBody.innerHTML = '';
         if (el.emptyState) el.emptyState.style.display = 'none';
 
-        const rows = data.slice(1);
+        // Rilevamento automatico intelligente di colonne e intestazioni
+        let eanColIdx = 0;
+        let nameColIdx = null;
+        let hasHeader = false;
+
+        if (forceEanColIdx !== null) {
+            eanColIdx = forceEanColIdx;
+            let maxCols = 0;
+            data.forEach(row => { if (row.length > maxCols) maxCols = row.length; });
+            if (maxCols === 2) {
+                nameColIdx = eanColIdx === 0 ? 1 : 0;
+            }
+            if (data.length > 1) {
+                const firstVal = String(data[0][eanColIdx] || '').trim();
+                if (firstVal && !/^\d{8,13}$/.test(firstVal)) {
+                    hasHeader = true;
+                }
+            }
+        } else {
+            const analysis = analyzeColumns(data);
+            eanColIdx = analysis.eanCol;
+            nameColIdx = analysis.nameCol;
+            hasHeader = analysis.hasHeader;
+        }
+
+        const rows = hasHeader ? data.slice(1) : data.slice(0);
         const fragment = document.createDocumentFragment();
 
         rows.forEach((row, idx) => {
-            const raw = String(row[colIdx] || '').trim();
+            const raw = String(row[eanColIdx] || '').trim();
             if (!raw) return;
             const v = BarcodeService.validateEAN(raw);
             v.original = raw;
             v.status = v.isValid ? 'valid' : 'error';
             
-            // Determina il nome del file personalizzato se ci sono 2 colonne (nome e ean)
+            // Determina il nome del file personalizzato: NomeProdotto_EAN
             v.customFilename = null;
-            if (row.length >= 2 && colIdx === 1 && row[0] !== undefined && row[0] !== null) {
-                const name = String(row[0]).trim().replace(/[\/\\:\*\?"<>\|]/g, '-');
+            if (nameColIdx !== null && row[nameColIdx] !== undefined && row[nameColIdx] !== null) {
+                let name = String(row[nameColIdx]).trim();
+                name = name.replace(/[\/\\:\*\?"<>\|]/g, '-');
                 if (name) {
+                    name = name.charAt(0).toUpperCase() + name.slice(1);
                     v.customFilename = `${name}_${v.code}`;
                 }
             }
