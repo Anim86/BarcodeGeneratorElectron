@@ -312,6 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     validateAbbondanza();
                     updateColorInfo();
                 }
+                if (batchData && batchData.length > 0) {
+                    refreshBatchTable();
+                }
             });
             input.addEventListener('input', () => {
                 if (currentBarcode) showPreview(currentBarcode);
@@ -631,6 +634,38 @@ document.addEventListener('DOMContentLoaded', () => {
         el.cancelUpload.onclick = () => el.columnModal.setAttribute('aria-hidden', 'true');
     }
 
+    function toPascalCase(str) {
+        if (!str) return '';
+        // Sostituiamo trattini, underscore e punteggiature con spazi per separare le parole
+        const words = str.replace(/[\-_]/g, ' ').split(/\s+/);
+        return words
+            .map(word => {
+                if (!word) return '';
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            })
+            .join('');
+    }
+
+    function cleanFilename(name) {
+        // Rimuoviamo caratteri non consentiti e punteggiature fastidiose prima di applicare il PascalCase
+        let clean = name.replace(/[\/\\:\*\?"<>\|]/g, '');
+        // Applica il PascalCase
+        clean = toPascalCase(clean);
+        // Assicura che non contenga nessuno spazio o carattere strano
+        clean = clean.replace(/[^a-zA-Z0-9]/g, '');
+        return clean;
+    }
+
+    function refreshBatchTable() {
+        if (!el.resultsBody || !batchData.length) return;
+        el.resultsBody.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        batchData.forEach((item, idx) => {
+            fragment.appendChild(createRow(item, idx));
+        });
+        el.resultsBody.appendChild(fragment);
+    }
+
     function runBatch(data, forceEanColIdx = null) {
         batchData = [];
         if (el.resultsBody) el.resultsBody.innerHTML = '';
@@ -675,9 +710,8 @@ document.addEventListener('DOMContentLoaded', () => {
             v.customFilename = null;
             if (nameColIdx !== null && row[nameColIdx] !== undefined && row[nameColIdx] !== null) {
                 let name = String(row[nameColIdx]).trim();
-                name = name.replace(/[\/\\:\*\?"<>\|]/g, '-');
+                name = cleanFilename(name);
                 if (name) {
-                    name = name.charAt(0).toUpperCase() + name.slice(1);
                     v.customFilename = `${name}_${v.code}`;
                 }
             }
@@ -702,14 +736,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const tr = document.createElement('tr');
         tr.dataset.idx = idx;
         const statusHTML = item.isValid ? '<span class="badge badge--ok">Valido</span>' : '<span class="badge badge--err">Errore</span>';
-        const errorMsg = item.isValid ? '—' : item.error;
+        
+        // Determiniamo il nome file da mostrare o l'errore se non valido
+        const format = el.formatSelect ? el.formatSelect.value : 'svg';
+        const color = el.colorSelect ? el.colorSelect.value : 'k';
+        const ext = format === 'pdf' ? 'pdf' : (format === 'eps' ? 'eps' : (format === 'tiff' ? 'tif' : (format === 'jpg' ? 'jpg' : 'svg')));
+        
+        let displayFilename = '—';
+        if (item.isValid) {
+            let base = item.customFilename || item.code;
+            displayFilename = `${base}.${ext}`;
+            if (color === 'cmyk' || color === 'grayscale') {
+                displayFilename = displayFilename.replace(`.${ext}`, `_${color}.${ext}`);
+            }
+        } else {
+            displayFilename = `<span style="color: var(--c-err); font-weight: 500;">${item.error}</span>`;
+        }
+
         const actionBtn = item.isValid ? `<button class="btn-row-dl" data-idx="${idx}">⬇</button>` : '';
 
         tr.innerHTML = `
             <td><code>${item.original}</code></td>
             <td>${item.type || '—'}</td>
             <td>${statusHTML}</td>
-            <td><small>${errorMsg}</small></td>
+            <td><small>${displayFilename}</small></td>
             <td>${actionBtn}</td>
         `;
 
