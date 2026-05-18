@@ -158,12 +158,12 @@ exit 0
             fs.writeFileSync(tempScriptPath, scriptContent, { mode: 0o755 });
 
             // Esegui tramite AppleScript nel Terminale visibile
-            const appleScript = \`tell application "Terminal" to do script "bash \\\\"\${tempScriptPath}\\\\""\`;
-            const activateScript = \`tell application "Terminal" to activate\`;
+            const appleScript = 'tell application "Terminal" to do script "bash \\"' + tempScriptPath + '\\""';
+            const activateScript = 'tell application "Terminal" to activate';
 
-            exec(\`osascript -e '\${appleScript}' -e '\${activateScript}'\`, (err) => {
+            exec('osascript -e \'' + appleScript + '\' -e \'' + activateScript + '\'', (err) => {
                 if (err) {
-                    console.error('Errore durante l\\'apertura del Terminale:', err);
+                    console.error('Errore durante l\'apertura del Terminale:', err);
                 }
             });
 
@@ -172,13 +172,13 @@ exit 0
                 type: 'info',
                 buttons: ['OK'],
                 title: 'Installazione Avviata',
-                message: 'Il Terminale è stato aperto per avviare l\\'installazione.',
-                detail: 'Segui le istruzioni visibili nella finestra del Terminale (potrebbe essere necessario inserire la password di amministratore del Mac).\\n\\nUna volta completata l\\'installazione, potrai riprovare ad esportare liberamente!'
+                message: "Il Terminale è stato aperto per avviare l'installazione.",
+                detail: "Segui le istruzioni visibili nella finestra del Terminale (potrebbe essere necessario inserire la password di amministratore del Mac).\n\nUna volta completata l'installazione, potrai riprovare ad esportare liberamente!"
             });
             return true;
         } catch (e) {
             console.error('Errore durante la creazione dello script:', e);
-            dialog.showErrorBox('Errore di sistema', 'Impossibile avviare l\\'installatore: ' + e.message);
+            dialog.showErrorBox("Errore di sistema", "Impossibile avviare l'installatore: " + e.message);
         }
     }
 
