@@ -36,12 +36,10 @@ jobs:
           mkdir -p assets/gs/mac
           curl -L -o Ghostscript.pkg https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg
           pkgutil --expand-full Ghostscript.pkg expanded_gs
-          echo "=== EXPANDED GS TOP LEVEL ==="
-          ls -la expanded_gs
-          echo "=== EXPANDED GS NESTED DIR ==="
-          find expanded_gs -maxdepth 2
-          echo "=== SEARCHING FOR GS BINARY ==="
-          find expanded_gs -name "gs"
+          echo "=== PAYLOAD LOCAL BIN CONTENTS ==="
+          ls -la expanded_gs/Ghostscript-10.07.0-Start.pkg/Payload/usr/local/bin || echo "usr/local/bin not found!"
+          echo "=== SEARCHING ALL FILES FOR GS ==="
+          find expanded_gs -name "*gs*"
           echo "========================="
           GS_BIN=$(find expanded_gs -name "gs" -type f | head -n 1)
           if [ -f "$GS_BIN" ]; then
