@@ -564,6 +564,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const v = BarcodeService.validateEAN(raw);
             v.original = raw;
             v.status = v.isValid ? 'valid' : 'error';
+            
+            // Determina il nome del file personalizzato se ci sono 2 colonne (nome e ean)
+            v.customFilename = null;
+            if (row.length >= 2 && colIdx === 1 && row[0] !== undefined && row[0] !== null) {
+                const name = String(row[0]).trim().replace(/[\/\\:\*\?"<>\|]/g, '-');
+                if (name) {
+                    v.customFilename = `${name}_${v.code}`;
+                }
+            }
+
             batchData.push(v);
             fragment.appendChild(createRow(v, batchData.length - 1));
         });
@@ -639,7 +649,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         code: item.code,
                         type: item.type,
                         svgString: svgString,
-                        params: params
+                        params: params,
+                        customFilename: item.customFilename
                     });
                     return;
                 }
@@ -652,7 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const blob = await BarcodeService.exportToBlob(item.code, item.type, params, format);
-            saveAs(blob, `${item.code}.${format}`);
+            const baseName = item.customFilename || item.code;
+            saveAs(blob, `${baseName}.${format}`);
         } catch (err) {
             console.error("Download failed:", err);
             alert("Errore durante l'esportazione: " + err.message);
@@ -703,9 +715,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             const svgString = BarcodeService.serializeSVG(tempSvg, { ...params, lineColor: opts.lineColor });
                             
                             const ext = (nativeFormat === 'tiff-cmyk' || nativeFormat === 'tiff-gray') ? 'tif' : (nativeFormat === 'pdf-x' ? 'pdf' : format);
+                            const baseName = item.customFilename || item.code;
                             return {
                                 svg: svgString,
-                                filename: `${item.code}.${ext}`
+                                filename: `${baseName}.${ext}`
                             };
                         });
 
@@ -726,7 +739,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 for (const item of items) {
                     const blob = await BarcodeService.exportToBlob(item.code, item.type, params, format);
-                    zip.file(`${item.code}.${format}`, blob);
+                    const baseName = item.customFilename || item.code;
+                    zip.file(`${baseName}.${format}`, blob);
                 }
 
                 const content = await zip.generateAsync({ type: 'blob' });

@@ -1,6 +1,6 @@
 {
-  "name": "ean-pro",
-  "version": "1.2.7",
+  "name": "ean-demon-generator",
+  "version": "1.3.0",
   "description": "Generatore professionale di codici a barre EAN-13/8",
   "main": "main/main.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "electron",
     "prepress"
   ],
-  "author": "EAN Pro",
+  "author": "EAN Demon Generator",
   "license": "ISC",
   "devDependencies": {
     "electron": "^28.0.0",
@@ -29,8 +29,9 @@
     "svg-to-pdfkit": "^0.1.8"
   },
   "build": {
-    "appId": "com.eanpro.app",
-    "productName": "EAN Pro",
+    "appId": "com.eandemongen.app",
+    "productName": "EAN Demon Generator",
+    "icon": "eandemongen.png",
     "asar": true,
     "asarUnpack": [
       "**/node_modules/sharp/**/*",
@@ -71,10 +72,10 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "EAN-Pro-Setup-${version}.${ext}"
+      "artifactName": "EAN-Demon-Generator-Setup-${version}.${ext}"
     },
     "portable": {
-      "artifactName": "EAN-Pro-Portable-${version}.${ext}"
+      "artifactName": "EAN-Demon-Generator-Portable-${version}.${ext}"
     },
     "mac": {
       "target": [
@@ -85,7 +86,7 @@
       "identity": null
     },
     "dmg": {
-      "artifactName": "EAN-Pro-Setup-${version}.${ext}"
+      "artifactName": "EAN-Demon-Generator-Setup-${version}.${ext}"
     }
   }
 }

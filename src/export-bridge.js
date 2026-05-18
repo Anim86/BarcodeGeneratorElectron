@@ -14,7 +14,7 @@ window.ExportBridge = {
      * @param {string} format 'tiff-cmyk' | 'jpeg-cmyk' | 'png-gray' | 'tiff-gray' | 'svg' | 'eps' | 'pdf-x'
      * @param {Object} barcodeData { code, type, svgString, params }
      */
-    async export(format, { code, type, svgString, params }) {
+    async export(format, { code, type, svgString, params, customFilename }) {
         if (!this.isElectron) {
             alert('Questa funzione è disponibile solo nella versione desktop di EAN Pro.');
             return;
@@ -36,6 +36,9 @@ window.ExportBridge = {
         }
 
         // Parametri per il file system
+        const baseName = customFilename || code;
+        const ext = format === 'tiff-cmyk' || format === 'tiff-gray' ? 'tif' : (format === 'jpeg-cmyk' ? 'jpg' : (format === 'pdf-x' ? 'pdf' : format));
+        
         const exportParams = {
             width: params.width,
             height: params.height,
@@ -44,7 +47,7 @@ window.ExportBridge = {
             colorSpace: params.colorSpace,
             textToPath: params.textToPath,
             forceK100: params.forceK100,
-            filename: `${code}.${format === 'tiff-cmyk' || format === 'tiff-gray' ? 'tif' : (format === 'jpeg-cmyk' ? 'jpg' : (format === 'pdf-x' ? 'pdf' : format))}`
+            filename: `${baseName}.${ext}`
         };
 
         try {

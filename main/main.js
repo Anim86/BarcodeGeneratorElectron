@@ -6,7 +6,7 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    title: 'EAN Pro — Professional Barcode Generator',
+    title: 'EAN Demon Generator — Professional Barcode Generator',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
