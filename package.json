@@ -51,7 +51,8 @@
       "src/**/*",
       "main/**/*",
       "preload/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "eandemongen.png"
     ],
     "extraResources": [
       {
@@ -70,6 +71,7 @@
       }
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         "nsis",
         "portable"
