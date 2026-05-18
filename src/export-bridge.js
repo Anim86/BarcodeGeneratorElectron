@@ -44,7 +44,7 @@ window.ExportBridge = {
             colorSpace: params.colorSpace,
             textToPath: params.textToPath,
             forceK100: params.forceK100,
-            filename: `${code}_${format}.${format === 'tiff-cmyk' || format === 'tiff-gray' ? 'tif' : (format === 'jpeg-cmyk' ? 'jpg' : (format === 'pdf-x' ? 'pdf' : format))}`
+            filename: `${code}.${format === 'tiff-cmyk' || format === 'tiff-gray' ? 'tif' : (format === 'jpeg-cmyk' ? 'jpg' : (format === 'pdf-x' ? 'pdf' : format))}`
         };
 
         try {
