@@ -437,6 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el.includeQZToggle && p.includeQZ !== undefined) el.includeQZToggle.checked = p.includeQZ;
         if (el.hriFormatToggle && p.hriFormat !== undefined) el.hriFormatToggle.checked = p.hriFormat;
 
+        updateHriState();
+
         if (currentBarcode) showPreview(currentBarcode);
         else {
             validateCompliance();
@@ -534,6 +536,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.bgColorField.style.display = el.bgTransToggle.checked ? 'none' : 'block';
             }
         });
+    }
+
+    function updateHriState() {
+        if (!el.hriToggle) return;
+        const active = el.hriToggle.checked;
+        if (el.hriOptionsWrap) {
+            el.hriOptionsWrap.style.opacity = active ? '1' : '0.5';
+            el.hriOptionsWrap.style.pointerEvents = active ? 'auto' : 'none';
+        }
+        if (el.textToPathToggle) {
+            const field = el.textToPathToggle.closest('.field');
+            if (field) {
+                field.style.opacity = active ? '1' : '0.5';
+                field.style.pointerEvents = active ? 'auto' : 'none';
+            }
+        }
+    }
+
+    if (el.hriToggle) {
+        el.hriToggle.addEventListener('change', updateHriState);
     }
 
     if (el.hriFontFile) {
@@ -1129,6 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Init
     if (el.hriPos) el.hriPos.dispatchEvent(new Event('change'));
     if (el.bgTransToggle) el.bgTransToggle.dispatchEvent(new Event('change'));
+    updateHriState();
     
     if (el.resetAllBtn) {
         el.resetAllBtn.onclick = () => {
@@ -1162,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elPlatform) elPlatform.textContent = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Linux';
             } else {
                 const elVerVal = $('about-version-val');
-                if (elVerVal) elVerVal.textContent = '1.5.3';
+                if (elVerVal) elVerVal.textContent = '1.5.6';
                 const elPlatform = $('about-platform-val');
                 if (elPlatform) elPlatform.textContent = 'Browser';
             }
@@ -1192,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendFeedbackBtn) {
         sendFeedbackBtn.onclick = () => {
             const appName = "EAN Demon Generator";
-            const version = $('about-version-val') ? $('about-version-val').textContent : "1.5.3";
+            const version = $('about-version-val') ? $('about-version-val').textContent : "1.5.6";
             const platform = isElectron ? window.electronAPI.getPlatform() : "win32";
             const os = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Browser';
             
