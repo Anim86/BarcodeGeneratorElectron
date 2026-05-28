@@ -2,7 +2,12 @@ const { ipcMain, dialog, app, shell } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const sharp = require('sharp');
+
+let sharp = null;
+function getSharp() {
+    if (!sharp) sharp = require('sharp');
+    return sharp;
+}
 
 // --- Helper for localization ---
 const getIsIt = () => {
@@ -240,18 +245,19 @@ async function performExport(svg, format, params, filePath) {
     const svgBuffer = Buffer.from(svg);
     const iccProfile = getICCPath();
     const { dpi } = params;
+    const sharpInstance = getSharp();
 
     switch (format) {
         case 'tiff-cmyk':
             if (fs.existsSync(iccProfile)) {
                 const profileBuffer = fs.readFileSync(iccProfile);
-                await sharp(svgBuffer, { density: dpi })
+                await sharpInstance(svgBuffer, { density: dpi })
                     .withMetadata({ density: dpi, icc: profileBuffer })
                     .toColourspace('cmyk')
                     .tiff({ compression: 'lzw' })
                     .toFile(filePath);
             } else {
-                await sharp(svgBuffer, { density: dpi })
+                await sharpInstance(svgBuffer, { density: dpi })
                     .withMetadata({ density: dpi })
                     .toColourspace('cmyk')
                     .tiff({ compression: 'lzw', predictor: 'horizontal' })
@@ -262,13 +268,13 @@ async function performExport(svg, format, params, filePath) {
         case 'jpeg-cmyk':
             if (fs.existsSync(iccProfile)) {
                 const profileBuffer = fs.readFileSync(iccProfile);
-                await sharp(svgBuffer, { density: dpi })
+                await sharpInstance(svgBuffer, { density: dpi })
                     .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
                     .withMetadata({ density: dpi, icc: profileBuffer })
                     .toColourspace('cmyk')
                     .toFile(filePath);
             } else {
-                await sharp(svgBuffer, { density: dpi })
+                await sharpInstance(svgBuffer, { density: dpi })
                     .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
                     .toColourspace('cmyk')
                     .toFile(filePath);
@@ -276,14 +282,14 @@ async function performExport(svg, format, params, filePath) {
             break;
 
         case 'png-gray':
-            await sharp(svgBuffer, { density: dpi })
+            await sharpInstance(svgBuffer, { density: dpi })
                 .toColourspace('b-w')
                 .png()
                 .toFile(filePath);
             break;
 
         case 'tiff-gray':
-            await sharp(svgBuffer, { density: dpi })
+            await sharpInstance(svgBuffer, { density: dpi })
                 .toColourspace('b-w')
                 .tiff({ compression: 'lzw' })
                 .toFile(filePath);
@@ -389,8 +395,18 @@ function getFiltersForFormat(format) {
     }
 }
 
-const PDFDocument = require('pdfkit');
-const SVGtoPDF = require('svg-to-pdfkit');
+let PDFDocumentClass = null;
+let SVGtoPDFConverter = null;
+
+function getPDFDocument() {
+    if (!PDFDocumentClass) PDFDocumentClass = require('pdfkit');
+    return PDFDocumentClass;
+}
+
+function getSVGtoPDF() {
+    if (!SVGtoPDFConverter) SVGtoPDFConverter = require('svg-to-pdfkit');
+    return SVGtoPDFConverter;
+}
 
 function getDimensionsInPoints(width, height, unit) {
     let wPt = width;
@@ -414,6 +430,8 @@ async function createTempPDF(svg, params) {
     
     return new Promise((resolve, reject) => {
         try {
+            const PDFDocument = getPDFDocument();
+            const SVGtoPDF = getSVGtoPDF();
             const doc = new PDFDocument({
                 size: [width, height],
                 margin: 0

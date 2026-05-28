@@ -5,13 +5,11 @@ app.whenReady().then(() => {
     win.webContents.on('did-finish-load', async () => {
         try {
             const html = await win.webContents.executeJavaScript('document.getElementById("language-switcher-container").innerHTML');
-            console.log("SWITCHER HTML:", html);
-            
-            const numTranslated = await win.webContents.executeJavaScript('document.querySelectorAll("[data-i18n]").length');
-            console.log("TRANSLATED ELEMENTS:", numTranslated);
-
-            const display = await win.webContents.executeJavaScript('window.getComputedStyle(document.getElementById("language-switcher-container")).display');
-            console.log("DISPLAY:", display);
+            console.log("HTML:", html);
+            const len = await win.webContents.executeJavaScript('document.querySelectorAll("[data-i18n]").length');
+            console.log("TRANSLATED:", len);
+            const bodyLang = await win.webContents.executeJavaScript('document.body.innerText');
+            console.log("BODY START:", bodyLang.substring(0, 100));
         } catch(e) {
             console.error(e);
         }
