@@ -1185,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elPlatform) elPlatform.textContent = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Linux';
             } else {
                 const elVerVal = $('about-version-val');
-                if (elVerVal) elVerVal.textContent = '1.5.7';
+                if (elVerVal) elVerVal.textContent = '1.5.8';
                 const elPlatform = $('about-platform-val');
                 if (elPlatform) elPlatform.textContent = 'Browser';
             }
@@ -1215,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendFeedbackBtn) {
         sendFeedbackBtn.onclick = () => {
             const appName = "EAN Demon Generator";
-            const version = $('about-version-val') ? $('about-version-val').textContent : "1.5.7";
+            const version = $('about-version-val') ? $('about-version-val').textContent : "1.5.8";
             const platform = isElectron ? window.electronAPI.getPlatform() : "win32";
             const os = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Browser';
             
@@ -1229,6 +1229,97 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.electronAPI.openExternal(mailtoUrl);
             } else {
                 window.open(mailtoUrl, '_blank');
+            }
+        };
+    }
+
+    // --- Interactive Tutorial / Quick Guide Modal Logic ───
+    const tutorialModal = $('tutorial-modal');
+    const tutorialTriggerBtn = $('tutorial-trigger-btn');
+    const tutorialPrevBtn = $('tutorial-prev-btn');
+    const tutorialNextBtn = $('tutorial-next-btn');
+    const tutorialDots = document.querySelectorAll('.tutorial-dot');
+    const tutorialSteps = document.querySelectorAll('.tutorial-step');
+    let activeStep = 0;
+
+    const showStep = (index) => {
+        activeStep = index;
+        tutorialSteps.forEach((step, idx) => {
+            step.style.display = idx === index ? 'block' : 'none';
+        });
+        
+        tutorialDots.forEach((dot, idx) => {
+            if (idx === index) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+
+        // Toggle back button disable state
+        if (tutorialPrevBtn) {
+            tutorialPrevBtn.disabled = index === 0;
+        }
+
+        // Handle next button vs finish button states
+        if (tutorialNextBtn) {
+            if (index === tutorialSteps.length - 1) {
+                tutorialNextBtn.setAttribute('data-i18n', 'tut_finish');
+                tutorialNextBtn.textContent = window.i18n.t('tut_finish');
+            } else {
+                tutorialNextBtn.setAttribute('data-i18n', 'tut_next');
+                tutorialNextBtn.textContent = window.i18n.t('tut_next');
+            }
+        }
+    };
+
+    const openTutorial = () => {
+        if (tutorialModal) {
+            tutorialModal.setAttribute('aria-hidden', 'false');
+            showStep(0);
+        }
+    };
+
+    const closeTutorial = () => {
+        if (tutorialModal) {
+            tutorialModal.setAttribute('aria-hidden', 'true');
+        }
+    };
+
+    if (tutorialTriggerBtn) {
+        tutorialTriggerBtn.onclick = openTutorial;
+    }
+
+    if (tutorialPrevBtn) {
+        tutorialPrevBtn.onclick = () => {
+            if (activeStep > 0) {
+                showStep(activeStep - 1);
+            }
+        };
+    }
+
+    if (tutorialNextBtn) {
+        tutorialNextBtn.onclick = () => {
+            if (activeStep < tutorialSteps.length - 1) {
+                showStep(activeStep + 1);
+            } else {
+                closeTutorial();
+            }
+        };
+    }
+
+    tutorialDots.forEach((dot) => {
+        dot.onclick = () => {
+            const stepIndex = parseInt(dot.getAttribute('data-step')) || 0;
+            showStep(stepIndex);
+        };
+    });
+
+    if (tutorialModal) {
+        // Close when clicking outside of the modal dialog
+        tutorialModal.onclick = (e) => {
+            if (e.target === tutorialModal) {
+                closeTutorial();
             }
         };
     }
@@ -1247,6 +1338,11 @@ document.addEventListener('DOMContentLoaded', () => {
         validateCompliance();
         validateAbbondanza();
         updateColorInfo();
+
+        // Dynamically refresh active tutorial step text if it's currently open
+        if (tutorialModal && tutorialModal.getAttribute('aria-hidden') === 'false') {
+            showStep(activeStep);
+        }
     });
 
     resetPreview();

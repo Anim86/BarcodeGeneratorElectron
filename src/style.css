@@ -1205,3 +1205,56 @@ body.drag-active::after {
     color: #1d4ed8;
     text-decoration: underline;
 }
+
+/* ── Interactive Tutorial / Quick Guide ── */
+.modal--tutorial {
+    max-width: 440px !important;
+    backdrop-filter: blur(10px);
+}
+.tutorial-steps-indicator {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0 16px 0;
+}
+.tutorial-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--c-border);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.tutorial-dot:hover {
+    background: var(--c-accent-bg);
+    border-color: var(--c-accent);
+}
+.tutorial-dot.active {
+    background: var(--c-accent);
+    transform: scale(1.2);
+}
+.tutorial-visual {
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border);
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.tutorial-step {
+    animation: fadeInStep 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeInStep {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

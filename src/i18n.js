@@ -137,7 +137,21 @@
             "about_copyright": "© 2026 EAN Demon Generator. Tutti i diritti riservati.",
             "about_close": "Chiudi",
             "feedback_btn": "Invia Feedback",
-            "feedback_mail_body": "Ciao Manuel,\n\n[Scrivi qui il tuo feedback...]\n\n---\nApp: EAN Demon Generator\nVersione: {version}\nOS: {os}\n"
+            "feedback_mail_body": "Ciao Manuel,\n\n[Scrivi qui il tuo feedback...]\n\n---\nApp: EAN Demon Generator\nVersione: {version}\nOS: {os}\n",
+
+            // Tutorial / Quick Guide
+            "tutorial_btn": "Guida Rapida all'Uso",
+            "tutorial_title": "Guida Rapida",
+            "tutorial_subtitle": "Scopri come utilizzare al meglio EAN Demon Generator",
+            "tut_back": "Precedente",
+            "tut_next": "Avanti",
+            "tut_finish": "Ho Capito!",
+            "tut_step0_title": "1. Inserimento Codici",
+            "tut_step0_desc": "Nel pannello di sinistra, inserisci i tuoi codici EAN manualmente (uno per riga o separati da virgola). L'applicazione convaliderà all'istante la validità sintattica del codice e calcolerà la cifra di controllo corretta se mancante.",
+            "tut_step1_title": "2. Configurazione e Anteprima",
+            "tut_step1_desc": "Al centro viene mostrata l'anteprima in tempo reale. Puoi regolare dimensioni, margini di abbondanza (consigliata conformità GS1), colori (RGB, CMYK, grigi o nero K100%) e le opzioni del testo HRI, con avviso per contrasti insufficienti.",
+            "tut_step2_title": "3. Importazione ed Elaborazione Batch",
+            "tut_step2_desc": "Nel pannello di destra, carica file Excel (XLSX) o CSV. Se il file include una colonna coi nomi dei prodotti ed una coi codici EAN, l'app nominerà i file in modo dinamico ed intelligente (es. 'NomeProdotto_EAN.png') per esportarli tutti in un clic!"
         },
         en: {
             // App Identity
@@ -271,7 +285,21 @@
             "about_copyright": "© 2026 EAN Demon Generator. All rights reserved.",
             "about_close": "Close",
             "feedback_btn": "Send Feedback",
-            "feedback_mail_body": "Hi Manuel,\n\n[Write your feedback here...]\n\n---\nApp: EAN Demon Generator\nVersion: {version}\nOS: {os}\n"
+            "feedback_mail_body": "Hi Manuel,\n\n[Write your feedback here...]\n\n---\nApp: EAN Demon Generator\nVersion: {version}\nOS: {os}\n",
+
+            // Tutorial / Quick Guide
+            "tutorial_btn": "Quick User Guide",
+            "tutorial_title": "Quick Guide",
+            "tutorial_subtitle": "Discover how to get the best out of EAN Demon Generator",
+            "tut_back": "Back",
+            "tut_next": "Next",
+            "tut_finish": "Got It!",
+            "tut_step0_title": "1. Codes Input",
+            "tut_step0_desc": "In the left panel, enter your EAN codes manually (one per line or separated by commas). The application will instantly validate the syntactic validity of the code and calculate the correct check digit if missing.",
+            "tut_step1_title": "2. Settings and Preview",
+            "tut_step1_desc": "The live preview is shown in the center. You can adjust barcode dimensions, quiet zones (GS1-compliant bleed limits), colors (RGB, CMYK, grayscale, or forced K100% black), and HRI text options with instant contrast warnings.",
+            "tut_step2_title": "3. Excel/CSV Import & Batch Export",
+            "tut_step2_desc": "In the right panel, upload Excel (XLSX) or CSV files. If the file includes a column with product names and one with EAN codes, the app will name the files dynamically and intelligently (e.g. 'ProductName_EAN.png') for a one-click bulk export!"
         }
     };
 
