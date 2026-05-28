@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const $ = id => document.getElementById(id);
     const $$ = sel => document.querySelectorAll(sel);
 
+    const isElectron = window.ExportBridge && window.ExportBridge.isElectron;
+
     // ── CONFIGURAZIONI & PRESET ──
     // ── CONFIGURAZIONI ──
 
@@ -30,9 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bgTransToggle:  $('bg-transparent-toggle'),
         bgColorField:   $('bg-color-field'),
         forceK100Toggle:$('force-k100-toggle'),
-        colorSelect:    $('color-select'),
+        colorCustomizerContainer: $('color-customizer-container'),
         colorInfoBox:   $('color-info-box'),
-        cmykValues:     $('cmyk-values'),
         contrastWarn:   $('contrast-warning'),
         hriToggle:      $('hri-toggle'),
         hriFont:        $('hri-font'),
@@ -60,9 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         savePresetBtn:  $('save-preset-btn'),
         customPresetsList: $('custom-presets-list'),
         cmykRasterWarning: $('cmyk-raster-warning'),
-        resetAllBtn:    $('reset-all-btn'),
-        resultsBody:    $('results-body'),
-        emptyState:     $('empty-state')
+        resetAllBtn:    $('reset-all-btn')
     };
 
     let currentBarcode = null;
@@ -89,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!val.isValid) {
             if (el.previewStatus) {
-                el.previewStatus.textContent = 'Errore';
+                el.previewStatus.textContent = window.i18n.t('status_invalid');
                 el.previewStatus.className = 'badge badge--err';
             }
             if (el.previewWrap) el.previewWrap.innerHTML = `<p class="error-text">${val.error}</p>`;
@@ -147,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.downloadBtn) el.downloadBtn.disabled = false;
         } else {
             if (el.previewStatus) {
-                el.previewStatus.textContent = 'Errore Rendering';
+                el.previewStatus.textContent = window.i18n.t('preview_rendering_error');
                 el.previewStatus.className = 'badge badge--err';
             }
         }
@@ -165,34 +164,51 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const minRec = BarcodeService.getRecommendedAbbondanza(currentBarcode.type, checkW);
         if (checkH < minRec) {
-            el.qzWarning.textContent = `Abbondanza raccomandata GS1: min. ${minRec.toFixed(2)}mm`;
+            el.qzWarning.textContent = window.i18n.t('qz_warning', { min: minRec.toFixed(2) });
             el.qzWarning.style.display = 'block';
         } else {
             el.qzWarning.style.display = 'none';
         }
     }
+    function syncColors(sourceHex) {
+        if (!sourceHex) return;
+        
+        const hexVal = sourceHex.toUpperCase();
+        if ($('val-hex') && document.activeElement !== $('val-hex')) $('val-hex').value = hexVal;
+
+        const rgb = BarcodeService.hexToRgb(sourceHex);
+        if ($('val-r') && document.activeElement !== $('val-r')) $('val-r').value = rgb.r;
+        if ($('val-g') && document.activeElement !== $('val-g')) $('val-g').value = rgb.g;
+        if ($('val-b') && document.activeElement !== $('val-b')) $('val-b').value = rgb.b;
+
+        const hsl = BarcodeService.rgbToHsl(rgb.r, rgb.g, rgb.b);
+        if ($('val-h') && document.activeElement !== $('val-h')) $('val-h').value = hsl.h;
+        if ($('val-s') && document.activeElement !== $('val-s')) $('val-s').value = hsl.s;
+        if ($('val-l') && document.activeElement !== $('val-l')) $('val-l').value = hsl.l;
+
+        const cmyk = BarcodeService.rgbToCmyk(rgb.r, rgb.g, rgb.b);
+        if ($('val-c') && document.activeElement !== $('val-c')) $('val-c').value = cmyk.c;
+        if ($('val-m') && document.activeElement !== $('val-m')) $('val-m').value = cmyk.m;
+        if ($('val-y') && document.activeElement !== $('val-y')) $('val-y').value = cmyk.y;
+        if ($('val-k') && document.activeElement !== $('val-k')) $('val-k').value = cmyk.k;
+    }
 
     function updateColorInfo() {
         if (!el.colorInfoBox) return;
         const mode = getV('colorSelect');
-        const bars = getV('colorBars');
+        const bars = getC('forceK100Toggle') ? '#000000' : getV('colorBars', '#000000');
         const bg   = getV('colorBg');
         const trans = getC('bgTransToggle');
 
+        // Sync colors
+        syncColors(bars);
+
         el.colorInfoBox.style.display = 'block';
-        if (mode === 'cmyk' && el.cmykValues) {
-            const rgb = BarcodeService.hexToRgb(bars);
-            const cmyk = BarcodeService.rgbToCmyk(rgb.r, rgb.g, rgb.b);
-            el.cmykValues.innerHTML = `<span><strong>CMYK:</strong> C:${cmyk.c} M:${cmyk.m} Y:${cmyk.y} K:${cmyk.k}</span>`;
-            el.cmykValues.style.display = 'block';
-        } else if (el.cmykValues) {
-            el.cmykValues.style.display = 'none';
-        }
 
         if (!trans && el.contrastWarn) {
             const ratio = BarcodeService.getContrastRatio(bars, bg);
             if (ratio < 5) {
-                el.contrastWarn.textContent = `Contrasto scarso (${ratio.toFixed(1)}:1). Minimo 5:1 raccomandato.`;
+                el.contrastWarn.textContent = window.i18n.t('contrast_warning', { ratio: ratio.toFixed(1) });
                 el.contrastWarn.style.display = 'block';
             } else {
                 el.contrastWarn.style.display = 'none';
@@ -221,19 +237,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const ok = BarcodeService.isGS1Compliant(currentBarcode.type, checkW, checkH);
         el.gs1Compliance.style.display = 'flex';
         el.gs1Compliance.className = ok ? 'compliance-badge compliance-badge--ok' : 'compliance-badge compliance-badge--warn';
-        el.gs1Compliance.querySelector('span').textContent = ok ? 'Dimensioni conformi GS1' : 'Dimensioni fuori standard';
+        el.gs1Compliance.querySelector('span').textContent = ok ? window.i18n.t('gs1_compliant') : window.i18n.t('gs1_non_compliant');
     }
 
     function resetPreview() {
         currentBarcode = null;
         if (el.previewStatus) {
-            el.previewStatus.textContent = 'In attesa';
+            el.previewStatus.textContent = window.i18n.t('preview_waiting');
             el.previewStatus.className = 'badge badge--neutral';
         }
         if (el.previewWrap) {
             el.previewWrap.innerHTML = `
                 <div class="preview__empty">
-                    <p>Inserisci un codice EAN o importa un file</p>
+                    <p data-i18n="preview_empty">${window.i18n.t('preview_empty')}</p>
                 </div>
             `;
         }
@@ -254,18 +270,23 @@ document.addEventListener('DOMContentLoaded', () => {
         el.manualInput.addEventListener('input', debounce(() => {
             const val = el.manualInput.value.trim();
             if (!val) {
-                resetPreview();
+                fullReset();
                 return;
             }
             
-            const codes = val.split(/[\s,]+/).filter(c => c.length > 0);
+            const codes = val.split(/[\r\n,;]+/).map(c => c.trim()).filter(c => c.length > 0);
             
             if (codes.length > 1) {
-                // Modalità batch automatica per input multiplo
-                const fakeRows = [['Codici']];
+                // Modalità batch automatica per input multiplo da area di testo
+                const fakeRows = [];
                 codes.forEach(c => fakeRows.push([c]));
-                detectColumn(fakeRows);
-            } else {
+                runBatch(fakeRows, 0); // EAN column is index 0
+            } else if (codes.length === 1) {
+                batchData = [];
+                if (el.resultsBody) el.resultsBody.innerHTML = '';
+                if (el.emptyState) el.emptyState.style.display = 'flex';
+                if (el.batchSummary) el.batchSummary.style.display = 'none';
+                if (el.downloadBtn) el.downloadBtn.disabled = true;
                 showPreview(BarcodeService.validateEAN(codes[0]));
             }
         }, 300));
@@ -317,7 +338,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             input.addEventListener('input', () => {
+                updateColorInfo();
                 if (currentBarcode) showPreview(currentBarcode);
+            });
+        }
+    });
+
+    // --- MANUALLY TYPED COLOR INPUTS ---
+    function applyManualColor(hex) {
+        if (el.colorBars && el.colorBars.value !== hex) {
+            el.colorBars.value = hex;
+            updateColorInfo();
+            if (currentBarcode) showPreview(currentBarcode);
+        }
+    }
+    
+    function parseNum(val, min, max) {
+        let n = parseInt(val, 10);
+        if (isNaN(n)) return min;
+        return Math.min(max, Math.max(min, n));
+    }
+
+    if ($('val-hex')) {
+        $('val-hex').addEventListener('input', (e) => {
+            let v = e.target.value.trim();
+            if (/^#[0-9A-Fa-f]{6}$/.test(v)) applyManualColor(v);
+        });
+    }
+
+    ['r','g','b'].forEach(ch => {
+        if ($('val-'+ch)) {
+            $('val-'+ch).addEventListener('input', () => {
+                const r = parseNum($('val-r').value, 0, 255);
+                const g = parseNum($('val-g').value, 0, 255);
+                const b = parseNum($('val-b').value, 0, 255);
+                const hex = BarcodeService.rgbToHex(r, g, b);
+                applyManualColor(hex);
+            });
+        }
+    });
+
+    ['h','s','l'].forEach(ch => {
+        if ($('val-'+ch)) {
+            $('val-'+ch).addEventListener('input', () => {
+                const h = parseNum($('val-h').value, 0, 360);
+                const s = parseNum($('val-s').value, 0, 100);
+                const l = parseNum($('val-l').value, 0, 100);
+                const rgb = BarcodeService.hslToRgb(h, s, l);
+                const hex = BarcodeService.rgbToHex(rgb.r, rgb.g, rgb.b);
+                applyManualColor(hex);
+            });
+        }
+    });
+
+    ['c','m','y','k'].forEach(ch => {
+        if ($('val-'+ch)) {
+            $('val-'+ch).addEventListener('input', () => {
+                const c = parseNum($('val-c').value, 0, 100);
+                const m = parseNum($('val-m').value, 0, 100);
+                const y = parseNum($('val-y').value, 0, 100);
+                const k = parseNum($('val-k').value, 0, 100);
+                const rgb = BarcodeService.cmykToRgb(c, m, y, k);
+                const hex = BarcodeService.rgbToHex(rgb.r, rgb.g, rgb.b);
+                applyManualColor(hex);
             });
         }
     });
@@ -399,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function savePreset() {
         const name = el.newPresetName.value.trim();
-        if (!name) return alert('Inserisci un nome per il preset');
+        if (!name) return alert(window.i18n.t('preset_name_required'));
         
         const presets = loadCustomPresets();
         presets[name] = getExportParams();
@@ -410,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function deletePreset(name) {
-        if (!confirm(`Sei sicuro di voler eliminare il preset "${name}"?`)) return;
+        if (!confirm(window.i18n.t('preset_delete_confirm', { name: name }))) return;
         const presets = loadCustomPresets();
         delete presets[name];
         localStorage.setItem('ean_pro_presets', JSON.stringify(presets));
@@ -607,7 +690,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < maxCols; i++) {
                 cols.push({
                     i,
-                    name: (headers && headers[i]) ? String(headers[i]) : `Colonna ${i + 1}`
+                    name: (headers && headers[i]) ? String(headers[i]) : `${window.i18n.t('custom_col_prefix')} ${i + 1}`
                 });
             }
             openColumnPicker(rows, cols);
@@ -723,10 +806,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el.resultsBody) el.resultsBody.appendChild(fragment);
 
         const valid = batchData.filter(x => x.isValid).length;
-        if (el.countValid) el.countValid.textContent = `${valid} validi`;
-        if (el.countInvalid) el.countInvalid.textContent = `${batchData.length - valid} errori`;
+        if (el.countValid) el.countValid.textContent = window.i18n.t('valid_chip', { count: valid });
+        if (el.countInvalid) el.countInvalid.textContent = window.i18n.t('error_chip', { count: batchData.length - valid });
         if (el.batchSummary) el.batchSummary.style.display = batchData.length ? 'flex' : 'none';
         if (el.downloadAllBtn) el.downloadAllBtn.disabled = valid === 0;
+        if (el.downloadBtn) el.downloadBtn.disabled = valid === 0;
 
         const firstValid = batchData.find(x => x.isValid);
         if (firstValid) showPreview(firstValid);
@@ -735,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function createRow(item, idx) {
         const tr = document.createElement('tr');
         tr.dataset.idx = idx;
-        const statusHTML = item.isValid ? '<span class="badge badge--ok">Valido</span>' : '<span class="badge badge--err">Errore</span>';
+        const statusHTML = item.isValid ? `<span class="badge badge--ok">${window.i18n.t('status_valid')}</span>` : `<span class="badge badge--err">${window.i18n.t('status_invalid')}</span>`;
         
         // Determiniamo il nome file da mostrare o l'errore se non valido
         const format = el.formatSelect ? el.formatSelect.value : 'svg';
@@ -816,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Fallback per browser o formati standard (PNG/JPG RGB)
             if (['tiff', 'eps', 'pdf'].includes(format) && (!window.ExportBridge || !window.ExportBridge.isElectron)) {
-                alert('I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di EAN Pro.');
+                alert(window.i18n.t('desktop_only_formats'));
                 return;
             }
 
@@ -825,95 +909,199 @@ document.addEventListener('DOMContentLoaded', () => {
             saveAs(blob, `${baseName}.${format}`);
         } catch (err) {
             console.error("Download failed:", err);
-            alert("Errore durante l'esportazione: " + err.message);
+            alert(window.i18n.t('export_error_detail', { error: err.message }));
+        }
+    }
+
+    async function downloadBatch() {
+        try {
+            const format = el.formatSelect.value;
+            const color = el.colorSelect.value;
+            const items = batchData.filter(x => x.isValid);
+            if (!items.length) return;
+
+            const params = getExportParams();
+
+            // Verifico se usare l'esportazione nativa Electron Batch
+            if (window.ExportBridge && window.ExportBridge.isElectron) {
+                let nativeFormat = null;
+                if (format === 'tiff') {
+                    nativeFormat = color === 'gray' ? 'tiff-gray' : 'tiff-cmyk';
+                } else if (format === 'eps') {
+                    nativeFormat = 'eps';
+                } else if (format === 'pdf') {
+                    nativeFormat = 'pdf-x';
+                } else if (format === 'jpg' && color === 'cmyk') {
+                    nativeFormat = 'jpeg-cmyk';
+                } else if (format === 'png' && color === 'gray') {
+                    nativeFormat = 'png-gray';
+                } else if (format === 'svg') {
+                    nativeFormat = 'svg';
+                }
+
+                if (nativeFormat) {
+                    if (el.downloadBtn) el.downloadBtn.disabled = true;
+                    
+                    // Prepariamo i dati per il batch nativo
+                    const batchItems = items.map(item => {
+                        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        const opts = BarcodeService.getBarcodeOptions(item.type, { ...params, code: item.code }, 'svg');
+                        BarcodeService.generate(tempSvg, item.code, opts);
+                        const svgString = BarcodeService.serializeSVG(tempSvg, { ...params, lineColor: opts.lineColor });
+                        
+                        const ext = (nativeFormat === 'tiff-cmyk' || nativeFormat === 'tiff-gray') ? 'tif' : (nativeFormat === 'pdf-x' ? 'pdf' : format);
+                        const baseName = item.customFilename || item.code;
+                        return {
+                            svg: svgString,
+                            filename: `${baseName}.${ext}`
+                        };
+                    });
+
+                    await window.ExportBridge.exportBatch(nativeFormat, batchItems, params);
+                    if (el.downloadBtn) el.downloadBtn.disabled = false;
+                    return;
+                }
+            }
+
+            // Fallback per browser o formati standard (PNG/JPG RGB)
+            if (['tiff', 'eps', 'pdf'].includes(format) && (!window.ExportBridge || !window.ExportBridge.isElectron)) {
+                alert(window.i18n.t('desktop_only_formats'));
+                return;
+            }
+
+            if (el.downloadBtn) el.downloadBtn.disabled = true;
+            const zip = new JSZip();
+
+            for (const item of items) {
+                const blob = await BarcodeService.exportToBlob(item.code, item.type, params, format);
+                const baseName = item.customFilename || item.code;
+                zip.file(`${baseName}.${format}`, blob);
+            }
+
+            const content = await zip.generateAsync({ type: 'blob' });
+            saveAs(content, `ean_batch_${new Date().getTime()}.zip`);
+        } catch (err) {
+            console.error("Batch download failed:", err);
+            alert(window.i18n.t('export_batch_error_detail', { error: err.message }));
+        } finally {
+            if (el.downloadBtn) el.downloadBtn.disabled = false;
         }
     }
 
     if (el.downloadBtn) {
         el.downloadBtn.addEventListener('click', () => {
-            if (currentBarcode && currentBarcode.isValid) downloadSingle(currentBarcode);
-        });
-    }
-
-    if (el.downloadAllBtn) {
-        el.downloadAllBtn.addEventListener('click', async () => {
-            try {
-                const format = el.formatSelect.value;
-                const color = el.colorSelect.value;
-                const items = batchData.filter(x => x.isValid);
-                if (!items.length) return;
-
-                const params = getExportParams();
-
-                // Verifico se usare l'esportazione nativa Electron Batch
-                if (window.ExportBridge && window.ExportBridge.isElectron) {
-                    let nativeFormat = null;
-                    if (format === 'tiff') {
-                        nativeFormat = color === 'gray' ? 'tiff-gray' : 'tiff-cmyk';
-                    } else if (format === 'eps') {
-                        nativeFormat = 'eps';
-                    } else if (format === 'pdf') {
-                        nativeFormat = 'pdf-x';
-                    } else if (format === 'jpg' && color === 'cmyk') {
-                        nativeFormat = 'jpeg-cmyk';
-                    } else if (format === 'png' && color === 'gray') {
-                        nativeFormat = 'png-gray';
-                    } else if (format === 'svg') {
-                        nativeFormat = 'svg';
-                    }
-
-                    if (nativeFormat) {
-                        el.downloadAllBtn.disabled = true;
-                        
-                        // Prepariamo i dati per il batch nativo
-                        const batchItems = items.map(item => {
-                            const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                            const opts = BarcodeService.getBarcodeOptions(item.type, { ...params, code: item.code }, 'svg');
-                            BarcodeService.generate(tempSvg, item.code, opts);
-                            const svgString = BarcodeService.serializeSVG(tempSvg, { ...params, lineColor: opts.lineColor });
-                            
-                            const ext = (nativeFormat === 'tiff-cmyk' || nativeFormat === 'tiff-gray') ? 'tif' : (nativeFormat === 'pdf-x' ? 'pdf' : format);
-                            const baseName = item.customFilename || item.code;
-                            return {
-                                svg: svgString,
-                                filename: `${baseName}.${ext}`
-                            };
-                        });
-
-                        await window.ExportBridge.exportBatch(nativeFormat, batchItems, params);
-                        el.downloadAllBtn.disabled = false;
-                        return;
-                    }
-                }
-
-                // Fallback per browser o formati standard (PNG/JPG RGB)
-                if (['tiff', 'eps', 'pdf'].includes(format) && (!window.ExportBridge || !window.ExportBridge.isElectron)) {
-                    alert('I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di EAN Pro.');
-                    return;
-                }
-
-                el.downloadAllBtn.disabled = true;
-                const zip = new JSZip();
-
-                for (const item of items) {
-                    const blob = await BarcodeService.exportToBlob(item.code, item.type, params, format);
-                    const baseName = item.customFilename || item.code;
-                    zip.file(`${baseName}.${format}`, blob);
-                }
-
-                const content = await zip.generateAsync({ type: 'blob' });
-                saveAs(content, `ean_batch_${new Date().getTime()}.zip`);
-            } catch (err) {
-                console.error("Batch download failed:", err);
-                alert("Errore durante l'esportazione batch: " + err.message);
-            } finally {
-                el.downloadAllBtn.disabled = false;
+            const validItems = batchData.filter(x => x.isValid);
+            if (validItems.length > 0) {
+                downloadBatch();
+            } else if (currentBarcode && currentBarcode.isValid) {
+                downloadSingle(currentBarcode);
             }
         });
     }
 
+    const triggerPreviewUpdate = () => {
+        if (currentBarcode) showPreview(currentBarcode);
+        else {
+            validateCompliance();
+            validateAbbondanza();
+            updateColorInfo();
+        }
+    };
+
+    if (el.colorFormatSelect) {
+        el.colorFormatSelect.addEventListener('change', () => {
+            const format = el.colorFormatSelect.value;
+            document.querySelectorAll('.color-input-group').forEach(grp => {
+                grp.style.display = 'none';
+            });
+            const activeGrp = $('color-input-grp-' + format.toLowerCase());
+            if (activeGrp) activeGrp.style.display = 'block';
+            
+            if (el.colorBars) syncColors(el.colorBars.value);
+        });
+    }
+
+    if (el.colorInputHex) {
+        el.colorInputHex.addEventListener('input', () => {
+            let val = el.colorInputHex.value.trim();
+            if (!val.startsWith('#')) val = '#' + val;
+            if (/^#[0-9A-F]{6}$/i.test(val)) {
+                syncColors(val);
+                triggerPreviewUpdate();
+            }
+        });
+    }
+
+    const handleRgbChange = () => {
+        const r = Math.max(0, Math.min(255, parseInt(el.colorInputR.value) || 0));
+        const g = Math.max(0, Math.min(255, parseInt(el.colorInputG.value) || 0));
+        const b = Math.max(0, Math.min(255, parseInt(el.colorInputB.value) || 0));
+        const hex = BarcodeService.rgbToHex(r, g, b);
+        syncColors(hex);
+        triggerPreviewUpdate();
+    };
+    [el.colorInputR, el.colorInputG, el.colorInputB].forEach(input => {
+        if (input) {
+            input.addEventListener('input', handleRgbChange);
+            input.addEventListener('change', handleRgbChange);
+        }
+    });
+
+    const handleHslChange = () => {
+        const h = Math.max(0, Math.min(360, parseInt(el.colorInputH.value) || 0));
+        const s = Math.max(0, Math.min(100, parseInt(el.colorInputS.value) || 0));
+        const l = Math.max(0, Math.min(100, parseInt(el.colorInputL.value) || 0));
+        const rgb = BarcodeService.hslToRgb(h, s, l);
+        const hex = BarcodeService.rgbToHex(rgb.r, rgb.g, rgb.b);
+        syncColors(hex);
+        triggerPreviewUpdate();
+    };
+    [el.colorInputH, el.colorInputS, el.colorInputL].forEach(input => {
+        if (input) {
+            input.addEventListener('input', handleHslChange);
+            input.addEventListener('change', handleHslChange);
+        }
+    });
+
+    const handleCmykChange = () => {
+        const c = Math.max(0, Math.min(100, parseFloat(el.cmykC.value) || 0));
+        const m = Math.max(0, Math.min(100, parseFloat(el.cmykM.value) || 0));
+        const y = Math.max(0, Math.min(100, parseFloat(el.cmykY.value) || 0));
+        const k = Math.max(0, Math.min(100, parseFloat(el.cmykK.value) || 0));
+        const rgb = BarcodeService.cmykToRgb(c, m, y, k);
+        const hex = BarcodeService.rgbToHex(rgb.r, rgb.g, rgb.b);
+        syncColors(hex);
+        triggerPreviewUpdate();
+    };
+    [el.cmykC, el.cmykM, el.cmykY, el.cmykK].forEach(input => {
+        if (input) {
+            input.addEventListener('input', handleCmykChange);
+            input.addEventListener('change', handleCmykChange);
+        }
+    });
+
+    if (el.forceK100Toggle) {
+        el.forceK100Toggle.addEventListener('change', () => {
+            const active = el.forceK100Toggle.checked;
+            if (el.colorCustomizerContainer) {
+                if (active) {
+                    el.colorCustomizerContainer.style.opacity = '0.4';
+                    el.colorCustomizerContainer.style.pointerEvents = 'none';
+                } else {
+                    el.colorCustomizerContainer.style.opacity = '1';
+                    el.colorCustomizerContainer.style.pointerEvents = 'auto';
+                }
+            }
+            triggerPreviewUpdate();
+        });
+        
+        // Esegui trigger all'avvio per applicare lo stato iniziale (deselezionato)
+        el.forceK100Toggle.checked = false;
+        el.forceK100Toggle.dispatchEvent(new Event('change'));
+    }
+
     function getExportParams() {
-        const includeQZ = getC('include-qz-toggle', true);
+        const includeQZ = getC('includeQZToggle', true);
         return {
             width: parseFloat(getV('widthInput', '37.29')) || 37.29,
             height: parseFloat(getV('heightInput', '25.93')) || 25.93,
@@ -924,15 +1112,15 @@ document.addEventListener('DOMContentLoaded', () => {
             includeQZ: includeQZ,
             qzH: includeQZ ? (parseFloat(getV('qzHInput', '0')) || 0) : 0,
             qzV: includeQZ ? (parseFloat(getV('qzVInput', '0')) || 0) : 0,
-            bars: getV('colorBars', '#000000'),
+            bars: getC('forceK100Toggle') ? '#000000' : getV('colorBars', '#000000'),
             bg: getV('colorBg', '#ffffff'),
             transparent: getC('bgTransToggle'),
             hriFont: getV('hriFont', 'OCR-B'),
             hriSize: parseFloat(getV('hriSize', '12')) || 12,
             hriPos: getV('hriPos', 'bottom'),
             hriFormat: getV('hriPos') === 'incorporated' ? false : getC('hriFormatToggle', true),
-            textToPath: getC('text-to-path-toggle', true),
-            forceK100: getC('force-k100-toggle', true),
+            textToPath: getC('textToPathToggle', true),
+            forceK100: getC('forceK100Toggle'),
             format: getV('formatSelect', 'png')
         };
     }
@@ -944,11 +1132,99 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (el.resetAllBtn) {
         el.resetAllBtn.onclick = () => {
-            if (confirm('Vuoi resettare tutti i codici inseriti? (Le impostazioni tecniche rimarranno invariate)')) {
+            if (confirm(window.i18n.t('reset_confirm'))) {
                 fullReset();
             }
         };
     }
+
+    // --- About Modal and Feedback Logic ---
+    const aboutModal = $('about-modal');
+    const aboutTriggerBtn = $('about-trigger-btn');
+    const closeAboutBtn = $('close-about-btn');
+    const sendFeedbackBtn = $('send-feedback-btn');
+
+    const openAbout = () => {
+        if (aboutModal) {
+            aboutModal.setAttribute('aria-hidden', 'false');
+            
+            // Set dynamic version and platform details
+            if (isElectron) {
+                window.electronAPI.getVersion().then(version => {
+                    const elVerVal = $('about-version-val');
+                    if (elVerVal) elVerVal.textContent = version;
+                    const elVersion = $('app-version');
+                    if (elVersion) elVersion.textContent = `v${version}`;
+                });
+                
+                const platform = window.electronAPI.getPlatform();
+                const elPlatform = $('about-platform-val');
+                if (elPlatform) elPlatform.textContent = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Linux';
+            } else {
+                const elVerVal = $('about-version-val');
+                if (elVerVal) elVerVal.textContent = '1.5.3';
+                const elPlatform = $('about-platform-val');
+                if (elPlatform) elPlatform.textContent = 'Browser';
+            }
+        }
+    };
+
+    const closeAbout = () => {
+        if (aboutModal) aboutModal.setAttribute('aria-hidden', 'true');
+    };
+
+    if (aboutTriggerBtn) aboutTriggerBtn.onclick = openAbout;
+    if (closeAboutBtn) closeAboutBtn.onclick = closeAbout;
+
+    // Listen to IPC event from main process native menu
+    if (isElectron) {
+        window.electronAPI.onOpenAbout(() => {
+            openAbout();
+        });
+        
+        // Auto-fetch version for the sidebar header logo too
+        window.electronAPI.getVersion().then(version => {
+            const elVersion = $('app-version');
+            if (elVersion) elVersion.textContent = `v${version}`;
+        });
+    }
+
+    if (sendFeedbackBtn) {
+        sendFeedbackBtn.onclick = () => {
+            const appName = "EAN Demon Generator";
+            const version = $('about-version-val') ? $('about-version-val').textContent : "1.5.3";
+            const platform = isElectron ? window.electronAPI.getPlatform() : "win32";
+            const os = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Browser';
+            
+            const recipient = "manuel.delbono@gmail.com"; // Customized based on author name
+            const bodyTemplate = window.i18n.t('feedback_mail_body', { version: version, os: os });
+            const subject = `${window.i18n.t('feedback_btn')} - ${appName} v${version}`;
+            
+            const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyTemplate)}`;
+            
+            if (isElectron) {
+                window.electronAPI.openExternal(mailtoUrl);
+            } else {
+                window.open(mailtoUrl, '_blank');
+            }
+        };
+    }
+
+    window.addEventListener('languageChanged', () => {
+        if (currentBarcode) showPreview(currentBarcode);
+        else resetPreview();
+        
+        if (batchData && batchData.length > 0) {
+            refreshBatchTable();
+            const valid = batchData.filter(x => x.isValid).length;
+            if (el.countValid) el.countValid.textContent = window.i18n.t('valid_chip', { count: valid });
+            if (el.countInvalid) el.countInvalid.textContent = window.i18n.t('error_chip', { count: batchData.length - valid });
+        }
+        
+        validateCompliance();
+        validateAbbondanza();
+        updateColorInfo();
+    });
 
     resetPreview();
 });

@@ -7,6 +7,7 @@
     "start": "electron .",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
+    "build:store": "electron-builder --win appx",
     "build:all": "electron-builder --mac --win"
   },
   "keywords": [
@@ -20,7 +21,8 @@
   "license": "ISC",
   "devDependencies": {
     "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "png-to-ico": "^3.0.1"
   },
   "dependencies": {
     "@img/sharp-darwin-arm64": "^0.33.2",
@@ -37,7 +39,7 @@
   "build": {
     "appId": "com.eandemongen.app",
     "productName": "EAN Demon Generator",
-    "icon": "eandemongen.png",
+    "icon": "eandemongentraspa.png",
     "asar": true,
     "asarUnpack": [
       "**/node_modules/sharp/**/*",
@@ -52,7 +54,8 @@
       "main/**/*",
       "preload/**/*",
       "assets/**/*",
-      "eandemongen.png"
+      "eandemongentraspa.png",
+      "jsbarcode.min.js"
     ],
     "extraResources": [
       {
@@ -74,8 +77,21 @@
       "icon": "build/icon.ico",
       "target": [
         "nsis",
-        "portable"
+        "portable",
+        "appx"
       ]
+    },
+    "appx": {
+      "publisher": "CN=F268AC72-E40B-4D14-98F1-5EF76B1358F8",
+      "publisherDisplayName": "Manuel Del Bono",
+      "displayName": "EAN Demon Generator",
+      "identityName": "ManuelDelBono.EANDemonGenerator",
+      "applicationId": "EanDemonGenerator",
+      "languages": [
+        "it-IT",
+        "en-US"
+      ],
+      "showNameOnTiles": true
     },
     "nsis": {
       "oneClick": false,

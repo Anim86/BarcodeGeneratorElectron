@@ -4,6 +4,12 @@ const path = require('path');
 const { exec } = require('child_process');
 const sharp = require('sharp');
 
+// --- Helper for localization ---
+const getIsIt = () => {
+    const locale = app.getLocale();
+    return locale && locale.startsWith('it');
+};
+
 // --- ICC Profile Logic ---
 const getICCPath = () => {
     const filename = 'ISOcoated_v2_300_eci.icc';
@@ -91,16 +97,24 @@ ipcMain.handle('install-ghostscript', async () => {
     const isWin = process.platform === 'win32';
     if (isWin) return false;
 
+    const isIt = getIsIt();
+
     // Mostra un dialog nativo all'utente con tre opzioni
     const { response } = await dialog.showMessageBox({
         type: 'question',
-        buttons: ['Scarica Installatore .pkg (Consigliato)', 'Installa con Homebrew (Terminale)', 'Annulla'],
+        buttons: isIt 
+            ? ['Scarica Installatore .pkg (Consigliato)', 'Installa con Homebrew (Terminale)', 'Annulla']
+            : ['Download .pkg Installer (Recommended)', 'Install with Homebrew (Terminal)', 'Cancel'],
         defaultId: 0,
-        title: 'Ghostscript Richiesto',
-        message: 'Ghostscript non è presente nel tuo sistema.',
-        detail: 'Questa libreria è necessaria per esportare nei formati professionali EPS e PDF/X-1a.\n\n' +
-                '• Metodo Consigliato (.pkg): Scarica e installa il pacchetto grafico ufficiale per Mac. È immediato e compatibile con tutte le versioni di macOS (incluso macOS 12 Monterey e precedenti).\n\n' +
-                '• Metodo Alternativo (Homebrew): Avvia l\'installazione automatica tramite Terminale (richiede privilegi amministratore).'
+        title: isIt ? 'Ghostscript Richiesto' : 'Ghostscript Required',
+        message: isIt ? 'Ghostscript non è presente nel tuo sistema.' : 'Ghostscript is not installed on your system.',
+        detail: isIt 
+            ? 'Questa libreria è necessaria per esportare nei formati professionali EPS e PDF/X-1a.\n\n' +
+              '• Metodo Consigliato (.pkg): Scarica e installa il pacchetto grafico ufficiale per Mac. È immediato e compatibile con tutte le versioni di macOS (incluso macOS 12 Monterey e precedenti).\n\n' +
+              '• Metodo Alternativo (Homebrew): Avvia l\'installazione automatica tramite Terminale (richiede privilegi amministratore).'
+            : 'This library is required to export to professional formats like EPS and PDF/X-1a.\n\n' +
+              '• Recommended Method (.pkg): Download and install the official graphic package for Mac. It is quick and compatible with all macOS versions (including macOS 12 Monterey and older).\n\n' +
+              '• Alternative Method (Homebrew): Starts automatic installation via Terminal (requires administrator privileges).'
     });
 
     if (response === 0) {
@@ -109,33 +123,37 @@ ipcMain.handle('install-ghostscript', async () => {
         
         await dialog.showMessageBox({
             type: 'info',
-            buttons: ['Ho capito'],
-            title: 'Download Avviato',
-            message: 'Il download di Ghostscript è stato avviato nel browser.',
-            detail: 'Fai doppio clic sul file scaricato (Ghostscript-10.07.0.pkg) per installarlo sul tuo Mac.\n\nUna volta completata l\'installazione, potrai riprovare ad esportare immediatamente!'
+            buttons: [isIt ? 'Ho capito' : 'I understand'],
+            title: isIt ? 'Download Avviato' : 'Download Started',
+            message: isIt ? 'Il download di Ghostscript è stato avviato nel browser.' : 'Ghostscript download has started in your browser.',
+            detail: isIt
+                ? 'Fai doppio clic sul file scaricato (Ghostscript-10.07.0.pkg) per installarlo sul tuo Mac.\n\nUna volta completata l\'installazione, potrai riprovare ad esportare immediatamente!'
+                : 'Double-click the downloaded file (Ghostscript-10.07.0.pkg) to install it on your Mac.\n\nOnce the installation is complete, you can try exporting again immediately!'
         });
         return true;
     }
 
     if (response === 1) {
+        const titleIt = "EAN Demon Generator - Installazione Assistita Ghostscript";
+        const titleEn = "EAN Demon Generator - Ghostscript Assisted Installation";
         const scriptContent = `#!/bin/bash
 clear
 echo "=========================================================="
-echo "         EAN Pro - Installazione Assistita Ghostscript     "
+echo "    ${isIt ? titleIt : titleEn}    "
 echo "=========================================================="
 echo ""
 
 # Verifica se Ghostscript è già installato
 if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/bin/gs ]; then
-    echo "[V] Ghostscript è già installato nel sistema!"
+    echo "${isIt ? '[V] Ghostscript è già installato nel sistema!' : '[V] Ghostscript is already installed on the system!'}"
     exit 0
 fi
 
 # Verifica Homebrew
 if ! command -v brew &> /dev/null && [ ! -f /opt/homebrew/bin/brew ] && [ ! -f /usr/local/bin/brew ]; then
-    echo "[!] Homebrew non è installato."
-    echo "    L'installazione di Homebrew richiede i primi privilegi di amministratore."
-    echo "    Inserisci la tua password di sistema quando richiesto e premi Invio."
+    echo "${isIt ? "[!] Homebrew non è installato." : "[!] Homebrew is not installed."}"
+    echo "${isIt ? "    L'installazione di Homebrew richiede i privilegi di amministratore." : "    Installing Homebrew requires administrator privileges."}"
+    echo "${isIt ? "    Inserisci la tua password di sistema quando richiesto e premi Invio." : "    Enter your system password when prompted and press Enter."}"
     echo ""
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     
@@ -146,7 +164,7 @@ if ! command -v brew &> /dev/null && [ ! -f /opt/homebrew/bin/brew ] && [ ! -f /
         eval "$(/usr/local/bin/brew shellenv)"
     fi
 else
-    echo "[V] Homebrew rilevato."
+    echo "${isIt ? "[V] Homebrew rilevato." : "[V] Homebrew detected."}"
 fi
 
 # Assicuriamoci che brew sia nel PATH anche se era preesistente ma non caricato
@@ -159,31 +177,31 @@ if ! command -v brew &> /dev/null; then
 fi
 
 echo ""
-echo "⏳ Installazione di Ghostscript tramite Homebrew..."
+echo "${isIt ? "⏳ Installazione di Ghostscript tramite Homebrew..." : "⏳ Installing Ghostscript via Homebrew..."}"
 echo "----------------------------------------------------------"
 brew install ghostscript
 echo "----------------------------------------------------------"
 
 if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/bin/gs ]; then
     echo ""
-    echo "✅ INSTALLAZIONE COMPLETATA CON SUCCESSO!"
-    echo "   Ora puoi tornare a EAN Pro ed esportare in EPS o PDF/X-1a."
+    echo "${isIt ? "✅ INSTALLAZIONE COMPLETATA CON SUCCESSO!" : "✅ INSTALLATION COMPLETED SUCCESSFULLY!"}"
+    echo "${isIt ? "   Ora puoi tornare a EAN Demon Generator ed esportare in EPS o PDF/X-1a." : "   Now you can return to EAN Demon Generator and export to EPS or PDF/X-1a."}"
 else
     echo ""
-    echo "❌ Si è verificato un errore durante l'installazione."
-    echo "   Se sei su macOS 12 (Monterey) o precedente, Homebrew potrebbe fallire."
-    echo "   Puoi installarlo facilmente scaricando e aprendo il pacchetto ufficiale:"
+    echo "${isIt ? "❌ Si è verificato un errore durante l'installazione." : "❌ An error occurred during installation."}"
+    echo "${isIt ? "   Se sei su macOS 12 (Monterey) o precedente, Homebrew potrebbe fallire." : "   If you are on macOS 12 (Monterey) or earlier, Homebrew might fail."}"
+    echo "${isIt ? "   Puoi installarlo facilmente scaricando e aprendo il pacchetto ufficiale:" : "   You can easily install it by downloading and opening the official package:"}"
     echo "   👉 https://pages.uoregon.edu/koch/Ghostscript-10.07.0.pkg"
 fi
 
 echo ""
-echo "Premi un tasto qualsiasi per chiudere questa finestra..."
+echo "${isIt ? "Premi un tasto qualsiasi per chiudere questa finestra..." : "Press any key to close this window..."}"
 read -n 1 -s
 exit 0
 `;
 
         try {
-            const tempScriptPath = path.join(app.getPath('temp'), 'eanpro_install_gs.sh');
+            const tempScriptPath = path.join(app.getPath('temp'), 'eandemongen_install_gs.sh');
             fs.writeFileSync(tempScriptPath, scriptContent, { mode: 0o755 });
 
             // Esegui tramite AppleScript nel Terminale visibile
@@ -200,14 +218,16 @@ exit 0
             await dialog.showMessageBox({
                 type: 'info',
                 buttons: ['OK'],
-                title: 'Installazione Avviata',
-                message: "Il Terminale è stato aperto per avviare l'installazione.",
-                detail: "Segui le istruzioni visibili nella finestra del Terminale (potrebbe essere necessario inserire la password di amministratore del Mac).\n\nUna volta completata l'installazione, potrai riprovare ad esportare liberamente!"
+                title: isIt ? 'Installazione Avviata' : 'Installation Started',
+                message: isIt ? "Il Terminale è stato aperto per avviare l'installazione." : "Terminal has been opened to start the installation.",
+                detail: isIt
+                    ? "Segui le istruzioni visibili nella finestra del Terminale (potrebbe essere necessario inserire la password di amministratore del Mac).\n\nUna volta completata l'installazione, potrai riprovare ad esportare liberamente!"
+                    : "Follow the instructions in the Terminal window (you might need to enter your Mac administrator password).\n\nOnce the installation is complete, you can try exporting again immediately!"
             });
             return true;
         } catch (e) {
             console.error('Errore durante la creazione dello script:', e);
-            dialog.showErrorBox("Errore di sistema", "Impossibile avviare l'installatore: " + e.message);
+            dialog.showErrorBox(isIt ? "Errore di sistema" : "System Error", (isIt ? "Impossibile avviare l'installatore: " : "Unable to start installer: ") + e.message);
         }
     }
 
@@ -289,9 +309,10 @@ async function performExport(svg, format, params, filePath) {
 // Single export
 ipcMain.handle('export-native', async (event, { svg, format, params }) => {
     const { filename } = params;
+    const isIt = getIsIt();
     
     const { filePath } = await dialog.showSaveDialog({
-        title: `Esporta Barcode - ${format.toUpperCase()}`,
+        title: `${isIt ? 'Esporta Barcode' : 'Export Barcode'} - ${format.toUpperCase()}`,
         defaultPath: filename,
         filters: getFiltersForFormat(format)
     });
@@ -309,8 +330,9 @@ ipcMain.handle('export-native', async (event, { svg, format, params }) => {
 
 // Batch export
 ipcMain.handle('export-native-batch', async (event, { items, format, params }) => {
+    const isIt = getIsIt();
     const { filePaths } = await dialog.showOpenDialog({
-        title: 'Seleziona dove salvare la cartella dei barcode',
+        title: isIt ? 'Seleziona dove salvare la cartella dei barcode' : 'Select where to save the barcodes folder',
         properties: ['openDirectory', 'createDirectory']
     });
 
@@ -320,7 +342,7 @@ ipcMain.handle('export-native-batch', async (event, { items, format, params }) =
     // Creazione automatica sottocartella con timestamp
     const now = new Date();
     const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`;
-    const folderName = `Esportazione_EAN_${timestamp}`;
+    const folderName = isIt ? `Esportazione_EAN_${timestamp}` : `EAN_Export_${timestamp}`;
     const baseDir = path.join(parentDir, folderName);
 
     try {
@@ -328,7 +350,7 @@ ipcMain.handle('export-native-batch', async (event, { items, format, params }) =
             fs.mkdirSync(baseDir, { recursive: true });
         }
     } catch (e) {
-        return { success: false, error: `Impossibile creare la cartella: ${e.message}` };
+        return { success: false, error: isIt ? `Impossibile creare la cartella: ${e.message}` : `Unable to create folder: ${e.message}` };
     }
 
     let successCount = 0;
@@ -354,14 +376,15 @@ ipcMain.handle('export-native-batch', async (event, { items, format, params }) =
 });
 
 function getFiltersForFormat(format) {
+    const isIt = getIsIt();
     switch (format) {
         case 'tiff-cmyk':
-        case 'tiff-gray': return [{ name: 'TIFF Image', extensions: ['tif', 'tiff'] }];
-        case 'jpeg-cmyk': return [{ name: 'JPEG Image', extensions: ['jpg', 'jpeg'] }];
-        case 'png-gray': return [{ name: 'PNG Image', extensions: ['png'] }];
-        case 'svg': return [{ name: 'Scalable Vector Graphics', extensions: ['svg'] }];
-        case 'eps': return [{ name: 'Encapsulated PostScript', extensions: ['eps'] }];
-        case 'pdf-x': return [{ name: 'PDF/X Document', extensions: ['pdf'] }];
+        case 'tiff-gray': return [{ name: isIt ? 'Immagine TIFF' : 'TIFF Image', extensions: ['tif', 'tiff'] }];
+        case 'jpeg-cmyk': return [{ name: isIt ? 'Immagine JPEG' : 'JPEG Image', extensions: ['jpg', 'jpeg'] }];
+        case 'png-gray': return [{ name: isIt ? 'Immagine PNG' : 'PNG Image', extensions: ['png'] }];
+        case 'svg': return [{ name: isIt ? 'Grafica Vettoriale Scalabile' : 'Scalable Vector Graphics', extensions: ['svg'] }];
+        case 'eps': return [{ name: isIt ? 'PostScript Incapsulato' : 'Encapsulated PostScript', extensions: ['eps'] }];
+        case 'pdf-x': return [{ name: isIt ? 'Documento PDF/X' : 'PDF/X Document', extensions: ['pdf'] }];
         default: return [];
     }
 }

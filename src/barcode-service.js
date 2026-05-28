@@ -26,26 +26,26 @@ const BarcodeService = {
      * @returns {{ isValid: boolean, type: string, error: string|null, code?: string, checksumExpected?: number }}
      */
     validateEAN(code) {
-        if (!code) return { isValid: false, type: 'unknown', error: 'Inserisci un codice' };
+        if (!code) return { isValid: false, type: 'unknown', error: '[ERR-EAN-001] Inserisci un codice' };
         
         const cleanCode = code.replace(/[\s\-\.]/g, '');
 
         if (!cleanCode) {
-            return { isValid: false, type: 'unknown', error: 'Inserisci un codice' };
+            return { isValid: false, type: 'unknown', error: '[ERR-EAN-001] Inserisci un codice' };
         }
 
         if (!/^\d+$/.test(cleanCode)) {
-            return { isValid: false, type: 'unknown', error: 'Il codice deve contenere solo numeri' };
+            return { isValid: false, type: 'unknown', error: '[ERR-EAN-002] Il codice deve contenere solo numeri' };
         }
 
         if (cleanCode.length < 8) {
-            return { isValid: false, type: 'unknown', error: `Codice troppo corto (${cleanCode.length} cifre)` };
+            return { isValid: false, type: 'unknown', error: `[ERR-EAN-003] Codice troppo corto (${cleanCode.length} cifre)` };
         }
         if (cleanCode.length > 8 && cleanCode.length < 13) {
-            return { isValid: false, type: 'unknown', error: `Lunghezza non valida (${cleanCode.length} cifre). Richieste 8 o 13.` };
+            return { isValid: false, type: 'unknown', error: `[ERR-EAN-004] Lunghezza non valida (${cleanCode.length} cifre). Richieste 8 o 13.` };
         }
         if (cleanCode.length > 13) {
-            return { isValid: false, type: 'unknown', error: `Codice troppo lungo (${cleanCode.length} cifre)` };
+            return { isValid: false, type: 'unknown', error: `[ERR-EAN-005] Codice troppo lungo (${cleanCode.length} cifre)` };
         }
 
         const type = cleanCode.length === 13 ? 'EAN13' : 'EAN8';
@@ -55,7 +55,7 @@ const BarcodeService = {
         if (expected !== calculated) {
             return {
                 isValid: false, type,
-                error: `Checksum errato. L'ultima cifra dovrebbe essere ${calculated}`,
+                error: `[ERR-EAN-006] Checksum errato. L'ultima cifra dovrebbe essere ${calculated}`,
                 checksumExpected: calculated
             };
         }
@@ -120,6 +120,81 @@ const BarcodeService = {
         y = Math.round(((y - k) / (1 - k)) * 100);
         k = Math.round(k * 100);
         return { c, m, y, k };
+    },
+
+    /** CMYK (0-100) → RGB */
+    cmykToRgb(c, m, y, k) {
+        const c_ = c / 100;
+        const m_ = m / 100;
+        const y_ = y / 100;
+        const k_ = k / 100;
+        const r = Math.round(255 * (1 - c_) * (1 - k_));
+        const g = Math.round(255 * (1 - m_) * (1 - k_));
+        const b = Math.round(255 * (1 - y_) * (1 - k_));
+        return { r, g, b };
+    },
+
+    /** RGB → Hex Color String */
+    rgbToHex(r, g, b) {
+        const toHex = v => {
+            const h = Math.max(0, Math.min(255, v)).toString(16);
+            return h.length === 1 ? '0' + h : h;
+        };
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    },
+
+    /** RGB → HSL */
+    rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0; // achromatic
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return {
+            h: Math.round(h * 360),
+            s: Math.round(s * 100),
+            l: Math.round(l * 100)
+        };
+    },
+
+    /** HSL → RGB */
+    hslToRgb(h, s, l) {
+        h /= 360; s /= 100; l /= 100;
+        let r, g, b;
+
+        if (s === 0) {
+            r = g = b = l; // achromatic
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
     },
 
     /** Calcola luminanza relativa */
