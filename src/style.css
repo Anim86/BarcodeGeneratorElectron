@@ -1077,6 +1077,12 @@ body.drag-active::after {
     max-width: 420px !important;
     backdrop-filter: blur(10px);
 }
+.modal--about .modal__title {
+    text-align: center;
+    font-size: 16px;
+    margin-bottom: 8px;
+    width: 100%;
+}
 .about-icon {
     margin: 0 auto 12px auto;
     display: block;

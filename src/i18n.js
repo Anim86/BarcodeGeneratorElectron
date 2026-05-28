@@ -128,8 +128,8 @@
             "status_invalid": "Errore",
 
             // About & Feedback
-            "theme_toggle": "Cambia tema",
-            "about_btn": "Info",
+            "theme_toggle": "Cambia tema (Chiaro/Scuro)",
+            "about_btn": "Informazioni su EAN Demon Generator",
             "about_title": "Informazioni su EAN Demon Generator",
             "about_version": "Versione",
             "about_platform": "Piattaforma",
@@ -262,8 +262,8 @@
             "status_invalid": "Error",
 
             // About & Feedback
-            "theme_toggle": "Toggle theme",
-            "about_btn": "About",
+            "theme_toggle": "Switch theme (Light/Dark)",
+            "about_btn": "About EAN Demon Generator",
             "about_title": "About EAN Demon Generator",
             "about_version": "Version",
             "about_platform": "Platform",
@@ -361,8 +361,10 @@
         const container = document.getElementById('language-switcher-container');
         if (!container) return;
         
+        const tooltipText = currentLang === 'it' ? 'Cambia lingua (Inglese)' : 'Switch language (Italian)';
+        
         container.innerHTML = `
-            <button id="lang-toggle-btn" class="btn-icon" title="Cambia lingua (${currentLang === 'it' ? 'EN' : 'IT'})">
+            <button id="lang-toggle-btn" class="btn-icon" title="${tooltipText}">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="2" y1="12" x2="22" y2="12"></line>
