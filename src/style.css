@@ -1181,28 +1181,28 @@ body.drag-active::after {
 /* ── Full Width Footer ── */
 .app-footer {
     height: 36px;
-    background: #ffffff;
+    background: var(--c-surface);
     border-top: 1px solid var(--c-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
     font-weight: 500;
-    color: #374151; /* Neutral dark gray text */
+    color: var(--c-text-2);
     flex-shrink: 0;
     user-select: none;
     z-index: 100;
     letter-spacing: 0.02em;
 }
 .app-footer a {
-    color: #2563eb; /* Cobalt Blue accent color for link */
+    color: var(--c-accent);
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
     transition: color 0.15s ease;
 }
 .app-footer a:hover {
-    color: #1d4ed8;
+    color: var(--c-accent-h);
     text-decoration: underline;
 }
 
