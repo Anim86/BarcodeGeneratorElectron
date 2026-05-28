@@ -83,7 +83,7 @@
 
             // Toolbar
             "input_label": "Inserimento Codici (EAN)",
-            "input_placeholder": "Inserisci uno o più codici EAN (es: 1234567890123, 12345678)",
+            "input_placeholder": "Inserisci i codici EAN (scrivili uno per riga)",
             "import_btn": "Importa file",
             "valid_chip": "{count} validi",
             "error_chip": "{count} errori",
@@ -147,7 +147,7 @@
             "tut_next": "Avanti",
             "tut_finish": "Ho Capito!",
             "tut_step0_title": "1. Inserimento Codici",
-            "tut_step0_desc": "Nel pannello di sinistra, inserisci i tuoi codici EAN manualmente (uno per riga o separati da virgola). L'applicazione convaliderà all'istante la validità sintattica del codice e calcolerà la cifra di controllo corretta se mancante.",
+            "tut_step0_desc": "Nel pannello di sinistra, inserisci i tuoi codici EAN manuali scrivendoli uno per riga. L'applicazione convaliderà all'istante la validità sintattica del codice e calcolerà la cifra di controllo corretta se mancante.",
             "tut_step1_title": "2. Configurazione e Anteprima",
             "tut_step1_desc": "Al centro viene mostrata l'anteprima in tempo reale. Puoi regolare dimensioni, margini di abbondanza (consigliata conformità GS1), colori (RGB, CMYK, grigi o nero K100%) e le opzioni del testo HRI, con avviso per contrasti insufficienti.",
             "tut_step2_title": "3. Importazione ed Elaborazione Batch",
@@ -231,7 +231,7 @@
 
             // Toolbar
             "input_label": "Enter Codes (EAN)",
-            "input_placeholder": "Enter one or more EAN codes (e.g., 1234567890123, 12345678)",
+            "input_placeholder": "Enter EAN codes (write one per line)",
             "import_btn": "Import file",
             "valid_chip": "{count} valid",
             "error_chip": "{count} errors",
@@ -295,7 +295,7 @@
             "tut_next": "Next",
             "tut_finish": "Got It!",
             "tut_step0_title": "1. Codes Input",
-            "tut_step0_desc": "In the left panel, enter your EAN codes manually (one per line or separated by commas). The application will instantly validate the syntactic validity of the code and calculate the correct check digit if missing.",
+            "tut_step0_desc": "In the left panel, enter your EAN codes manually by writing them one per line. The application will instantly validate the syntactic validity of the code and calculate the correct check digit if missing.",
             "tut_step1_title": "2. Settings and Preview",
             "tut_step1_desc": "The live preview is shown in the center. You can adjust barcode dimensions, quiet zones (GS1-compliant bleed limits), colors (RGB, CMYK, grayscale, or forced K100% black), and HRI text options with instant contrast warnings.",
             "tut_step2_title": "3. Excel/CSV Import & Batch Export",
