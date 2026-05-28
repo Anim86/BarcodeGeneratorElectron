@@ -58,8 +58,8 @@
 
             // Quiet Zone
             "qz_legend": "Area di Abbondanza",
-            "qz_horizontal": "Abbondanza Orizzontale",
-            "qz_vertical": "Abbondanza Verticale",
+            "qz_horizontal": "Abbondanza<br>Orizzontale",
+            "qz_vertical": "Abbondanza<br>Verticale",
             "qz_include": "Includi abbondanza nell'esportazione",
             "qz_warning": "[WRN-PRE-004] Abbondanza raccomandata GS1: min. {min}mm",
 
@@ -192,8 +192,8 @@
 
             // Quiet Zone
             "qz_legend": "Quiet Zone (Bleed)",
-            "qz_horizontal": "Horizontal Quiet Zone",
-            "qz_vertical": "Vertical Quiet Zone",
+            "qz_horizontal": "Horizontal<br>Quiet Zone",
+            "qz_vertical": "Vertical<br>Quiet Zone",
             "qz_include": "Include quiet zone in export",
             "qz_warning": "[WRN-PRE-004] Recommended GS1 quiet zone: min. {min}mm",
 
