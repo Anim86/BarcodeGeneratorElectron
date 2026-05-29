@@ -139,8 +139,8 @@ ipcMain.handle('install-ghostscript', async () => {
     }
 
     if (response === 1) {
-        const titleIt = "EAN Demon Generator - Installazione Assistita Ghostscript";
-        const titleEn = "EAN Demon Generator - Ghostscript Assisted Installation";
+        const titleIt = "Daemon EAN Generator - Installazione Assistita Ghostscript";
+        const titleEn = "Daemon EAN Generator - Ghostscript Assisted Installation";
         const scriptContent = `#!/bin/bash
 clear
 echo "=========================================================="
@@ -190,7 +190,7 @@ echo "----------------------------------------------------------"
 if command -v gs &> /dev/null || [ -f /opt/homebrew/bin/gs ] || [ -f /usr/local/bin/gs ]; then
     echo ""
     echo "${isIt ? "✅ INSTALLAZIONE COMPLETATA CON SUCCESSO!" : "✅ INSTALLATION COMPLETED SUCCESSFULLY!"}"
-    echo "${isIt ? "   Ora puoi tornare a EAN Demon Generator ed esportare in EPS o PDF/X-1a." : "   Now you can return to EAN Demon Generator and export to EPS or PDF/X-1a."}"
+    echo "${isIt ? "   Ora puoi tornare a Daemon EAN Generator ed esportare in EPS o PDF/X-1a." : "   Now you can return to Daemon EAN Generator and export to EPS or PDF/X-1a."}"
 else
     echo ""
     echo "${isIt ? "❌ Si è verificato un errore durante l'installazione." : "❌ An error occurred during installation."}"

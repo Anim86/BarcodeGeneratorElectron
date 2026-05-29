@@ -35,7 +35,7 @@ function setAppMenu(windowInstance) {
       label: isIt ? 'Aiuto' : 'Help',
       submenu: [
         {
-          label: isIt ? 'Informazioni su EAN Demon Generator' : 'About EAN Demon Generator',
+          label: isIt ? 'Informazioni su Daemon EAN Generator' : 'About Daemon EAN Generator',
           click: () => {
             if (windowInstance) {
               windowInstance.webContents.send('open-about');
@@ -58,7 +58,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     icon: path.join(__dirname, process.platform === 'win32' ? '../build/icon.ico' : '../eandemongentraspa.png'),
-    title: isIt ? 'EAN Demon Generator — Generatore Professionale di Codici a Barre' : 'EAN Demon Generator — Professional Barcode Generator',
+    title: isIt ? 'Daemon EAN Generator — Generatore Professionale di Codici a Barre' : 'Daemon EAN Generator — Professional Barcode Generator',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,

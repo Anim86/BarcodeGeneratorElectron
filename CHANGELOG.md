@@ -1,4 +1,4 @@
-# Changelog — EAN Demon Generator
+# Changelog — Daemon EAN Generator
 
 Tutti i cambiamenti di rilievo apportati al progetto verranno documentati in questo file a partire dal primo rilascio ufficiale sullo Store.
 

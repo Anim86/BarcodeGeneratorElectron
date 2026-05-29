@@ -1,5 +1,5 @@
 /**
- * EAN Demon Generator — i18n Localization System
+ * Daemon EAN Generator — i18n Localization System
  * Handles translation of HTML elements and exposes JS translation utilities.
  */
 
@@ -7,8 +7,8 @@
     const translations = {
         it: {
             // App Identity
-            "app_title": "EAN Deamon Generator — Generatore Codici a Barre",
-            "app_name": "EAN Deamon Generator",
+            "app_title": "Daemon EAN Generator — Generatore Codici a Barre",
+            "app_name": "Daemon EAN Generator",
             "app_description": "Strumento professionale per la generazione di codici a barre EAN-13 ed EAN-8 in alta risoluzione, ottimizzato per il mondo della prestampa e del packaging.",
             "brand_subtitle": "Client-side · Nessun dato inviato",
             "author_credit": "Ideazione e realizzazione di",
@@ -116,7 +116,7 @@
             "modal_cancel": "Annulla",
 
             // JS Logic & Alerts
-            "desktop_only_formats": "[ERR-SYS-002] I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di EAN Demon Generator.",
+            "desktop_only_formats": "[ERR-SYS-002] I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di Daemon EAN Generator.",
             "export_success": "Esportazione completata con successo in:\n{path}\n\nTotale file: {count}",
             "export_partial_errors": "Esportazione batch completata con alcuni errori.",
             "system_error": "[ERR-SYS-003] Errore di sistema: {error}",
@@ -129,20 +129,20 @@
 
             // About & Feedback
             "theme_toggle": "Cambia tema (Chiaro/Scuro)",
-            "about_btn": "Informazioni su EAN Demon Generator",
-            "about_title": "Informazioni su EAN Demon Generator",
+            "about_btn": "Informazioni su Daemon EAN Generator",
+            "about_title": "Informazioni su Daemon EAN Generator",
             "about_version": "Versione",
             "about_platform": "Piattaforma",
             "about_developer": "Sviluppato da",
-            "about_copyright": "© 2026 EAN Demon Generator. Tutti i diritti riservati.",
+            "about_copyright": "© 2026 Daemon EAN Generator. Tutti i diritti riservati.",
             "about_close": "Chiudi",
             "feedback_btn": "Invia Feedback",
-            "feedback_mail_body": "Ciao Manuel,\n\n[Scrivi qui il tuo feedback...]\n\n---\nApp: EAN Demon Generator\nVersione: {version}\nOS: {os}\n",
+            "feedback_mail_body": "Ciao Manuel,\n\n[Scrivi qui il tuo feedback...]\n\n---\nApp: Daemon EAN Generator\nVersione: {version}\nOS: {os}\n",
 
             // Tutorial / Quick Guide
             "tutorial_btn": "Guida Rapida all'Uso",
             "tutorial_title": "Guida Rapida",
-            "tutorial_subtitle": "Scopri come utilizzare al meglio EAN Demon Generator",
+            "tutorial_subtitle": "Scopri come utilizzare al meglio Daemon EAN Generator",
             "tut_back": "Precedente",
             "tut_next": "Avanti",
             "tut_finish": "Ho Capito!",
@@ -155,8 +155,8 @@
         },
         en: {
             // App Identity
-            "app_title": "EAN Deamon Generator — Barcode Generator",
-            "app_name": "EAN Deamon Generator",
+            "app_title": "Daemon EAN Generator — Barcode Generator",
+            "app_name": "Daemon EAN Generator",
             "app_description": "Professional tool for high-resolution EAN-13 and EAN-8 barcode generation, optimized for prepress and packaging workflows.",
             "brand_subtitle": "Client-side · No data sent",
             "author_credit": "Designed and developed by",
@@ -264,7 +264,7 @@
             "modal_cancel": "Cancel",
 
             // JS Logic & Alerts
-            "desktop_only_formats": "[ERR-SYS-002] TIFF, EPS and PDF formats are only available in the desktop version of EAN Demon Generator.",
+            "desktop_only_formats": "[ERR-SYS-002] TIFF, EPS and PDF formats are only available in the desktop version of Daemon EAN Generator.",
             "export_success": "Export completed successfully to:\n{path}\n\nTotal files: {count}",
             "export_partial_errors": "Batch export completed with some errors.",
             "system_error": "[ERR-SYS-003] System error: {error}",
@@ -277,20 +277,20 @@
 
             // About & Feedback
             "theme_toggle": "Switch theme (Light/Dark)",
-            "about_btn": "About EAN Demon Generator",
-            "about_title": "About EAN Demon Generator",
+            "about_btn": "About Daemon EAN Generator",
+            "about_title": "About Daemon EAN Generator",
             "about_version": "Version",
             "about_platform": "Platform",
             "about_developer": "Developed by",
-            "about_copyright": "© 2026 EAN Demon Generator. All rights reserved.",
+            "about_copyright": "© 2026 Daemon EAN Generator. All rights reserved.",
             "about_close": "Close",
             "feedback_btn": "Send Feedback",
-            "feedback_mail_body": "Hi Manuel,\n\n[Write your feedback here...]\n\n---\nApp: EAN Demon Generator\nVersion: {version}\nOS: {os}\n",
+            "feedback_mail_body": "Hi Manuel,\n\n[Write your feedback here...]\n\n---\nApp: Daemon EAN Generator\nVersion: {version}\nOS: {os}\n",
 
             // Tutorial / Quick Guide
             "tutorial_btn": "Quick User Guide",
             "tutorial_title": "Quick Guide",
-            "tutorial_subtitle": "Discover how to get the best out of EAN Demon Generator",
+            "tutorial_subtitle": "Discover how to get the best out of Daemon EAN Generator",
             "tut_back": "Back",
             "tut_next": "Next",
             "tut_finish": "Got It!",

@@ -1,6 +1,6 @@
-# Relazione degli Errori e Avvisi — EAN Demon Generator
+# Relazione degli Errori e Avvisi — Daemon EAN Generator
 
-Questo documento contiene una panoramica completa di tutti i messaggi d'errore, avvisi grafici e notifiche di validazione che possono apparire all'interno dell'applicazione **EAN Demon Generator**, ciascuno corredato dal rispettivo **Codice Univoco d'Errore**.
+Questo documento contiene una panoramica completa di tutti i messaggi d'errore, avvisi grafici e notifiche di validazione che possono apparire all'interno dell'applicazione **Daemon EAN Generator**, ciascuno corredato dal rispettivo **Codice Univoco d'Errore**.
 
 Ogni voce è descritta con il suo codice, la sua dicitura esatta (in Italiano e Inglese), la condizione in cui si verifica e la soluzione consigliata per correggerlo.
 
@@ -74,8 +74,8 @@ Questi messaggi compaiono sotto forma di modali, notifiche di sistema o finestre
 * **Quando appare**: Se l'utente clicca su "Salva" sotto la sezione dei preset personali senza aver digitato alcun nome nel campo di testo.
 * **Correzione**: Digitare un nome descrittivo (es. "Etichette Scatola") prima di cliccare su Salva.
 
-### ❌ `[ERR-SYS-002]` I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di EAN Demon Generator.
-* **Dicitura EN**: `[ERR-SYS-002] TIFF, EPS and PDF formats are only available in the desktop version of EAN Demon Generator.`
+### ❌ `[ERR-SYS-002]` I formati TIFF, EPS e PDF sono disponibili solo nella versione desktop di Daemon EAN Generator.
+* **Dicitura EN**: `[ERR-SYS-002] TIFF, EPS and PDF formats are only available in the desktop version of Daemon EAN Generator.`
 * **Quando appare**: Appare in ambiente browser qualora si tenti di esportare file vettoriali CMYK avanzati (PDF o EPS) o raster professionali (TIFF).
 * **Correzione**: Eseguire l'applicazione tramite l'eseguibile desktop Windows (`EAN-Demon-Generator-Portable-1.5.3.exe`) per abilitare l'esportazione nativa integrata.
 
