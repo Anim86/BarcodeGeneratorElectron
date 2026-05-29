@@ -90,11 +90,11 @@
       ]
     },
     "appx": {
-      "publisher": "CN=F268AC72-E40B-4D14-98F1-5EF76B1358F8",
+      "publisher": "CN=F8E43913-2EBD-40FD-A44E-FABAF1FAAC9F",
       "publisherDisplayName": "Manuel Del Bono",
       "displayName": "Daemon EAN Generator",
-      "identityName": "ManuelDelBono.EANDemonGenerator",
-      "applicationId": "EanDemonGenerator",
+      "identityName": "ManuelDelBono.DaemonEANGenerator",
+      "applicationId": "DaemonEANGenerator",
       "languages": [
         "it-IT",
         "en-US"
