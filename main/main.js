@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain, shell, Menu } = require('electron');
 const path = require('path');
-const { autoUpdater } = require('electron-updater');
 require('./export-handlers');
 
 let mainWindow = null;
@@ -89,10 +88,6 @@ app.whenReady().then(() => {
   });
 
   createWindow();
-
-  if (app.isPackaged && !process.windowsStore) {
-    autoUpdater.checkForUpdatesAndNotify();
-  }
 
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

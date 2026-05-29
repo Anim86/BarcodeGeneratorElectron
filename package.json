@@ -31,7 +31,6 @@
     "@img/sharp-libvips-darwin-x64": "^1.0.4",
     "@img/sharp-libvips-win32-x64": "^1.0.4",
     "@img/sharp-win32-x64": "^0.33.2",
-    "electron-updater": "^6.8.3",
     "jsdom": "^29.1.1",
     "pdfkit": "^0.18.0",
     "sharp": "^0.33.2",
@@ -39,13 +38,6 @@
   },
   "build": {
     "appId": "com.eandemongen.app",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Anim86",
-        "repo": "BarcodeGeneratorElectron"
-      }
-    ],
     "productName": "Daemon EAN Generator",
     "icon": "eandemongentraspa.png",
     "asar": true,
