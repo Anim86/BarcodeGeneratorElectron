@@ -1185,7 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (elPlatform) elPlatform.textContent = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Linux';
             } else {
                 const elVerVal = $('about-version-val');
-                if (elVerVal) elVerVal.textContent = '1.6.3';
+                if (elVerVal) elVerVal.textContent = '1.0.0';
                 const elPlatform = $('about-platform-val');
                 if (elPlatform) elPlatform.textContent = 'Browser';
             }
@@ -1215,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendFeedbackBtn) {
         sendFeedbackBtn.onclick = () => {
             const appName = "Daemon EAN Generator";
-            const version = $('about-version-val') ? $('about-version-val').textContent : "1.6.3";
+            const version = $('about-version-val') ? $('about-version-val').textContent : "1.0.0";
             const platform = isElectron ? window.electronAPI.getPlatform() : "win32";
             const os = platform === 'win32' ? 'Windows' : platform === 'darwin' ? 'macOS' : 'Browser';
             
