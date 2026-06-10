@@ -425,7 +425,10 @@ document.addEventListener('DOMContentLoaded', () => {
             el.hriPos.value = p.hriPos;
             el.hriPos.dispatchEvent(new Event('change'));
         }
-        if (el.formatSelect && p.format) el.formatSelect.value = p.format;
+        if (el.formatSelect && p.format) {
+            el.formatSelect.value = p.format;
+            el.formatSelect.dispatchEvent(new Event('change'));
+        }
         if (el.colorBars && p.bars) el.colorBars.value = p.bars;
         if (el.colorBg && p.bg) el.colorBg.value = p.bg;
 
@@ -536,6 +539,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.bgColorField.style.display = el.bgTransToggle.checked ? 'none' : 'block';
             }
         });
+    }
+
+    if (el.formatSelect) {
+        el.formatSelect.addEventListener('change', () => {
+            if (el.bgTransToggle) {
+                const isJpg = el.formatSelect.value === 'jpg';
+                if (isJpg) {
+                    el.bgTransToggle.checked = false;
+                    el.bgTransToggle.disabled = true;
+                    el.bgTransToggle.closest('.field').style.opacity = '0.5';
+                    if (el.bgColorField) el.bgColorField.style.display = 'block';
+                } else {
+                    el.bgTransToggle.disabled = false;
+                    el.bgTransToggle.closest('.field').style.opacity = '1';
+                }
+            }
+        });
+        setTimeout(() => el.formatSelect.dispatchEvent(new Event('change')), 100);
     }
 
     function updateHriState() {

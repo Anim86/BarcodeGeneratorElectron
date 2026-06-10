@@ -269,12 +269,14 @@ async function performExport(svg, format, params, filePath) {
             if (fs.existsSync(iccProfile)) {
                 const profileBuffer = fs.readFileSync(iccProfile);
                 await sharpInstance(svgBuffer, { density: dpi })
+                    .flatten({ background: '#ffffff' })
                     .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
                     .withMetadata({ density: dpi, icc: profileBuffer })
                     .toColourspace('cmyk')
                     .toFile(filePath);
             } else {
                 await sharpInstance(svgBuffer, { density: dpi })
+                    .flatten({ background: '#ffffff' })
                     .jpeg({ quality: 95, chromaSubsampling: '4:4:4' })
                     .toColourspace('cmyk')
                     .toFile(filePath);
