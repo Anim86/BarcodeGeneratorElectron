@@ -503,7 +503,7 @@ async function handleEPSExport(svg, outputPath, params) {
     if (params.forceK100) {
         colorCmd = '-sProcessColorModel=DeviceGray -sColorConversionStrategy=Gray ';
     } else if (params.colorSpace === 'cmyk') {
-        colorCmd = '-sProcessColorModel=DeviceCMYK -sColorConversionStrategy=CMYK ';
+        colorCmd = '-sProcessColorModel=DeviceCMYK -sColorConversionStrategy=LeaveColorUnchanged ';
     }
     
     const textCmd = params.textToPath ? '-dNoOutputFonts ' : '';
@@ -533,7 +533,7 @@ async function handlePDFXExport(svg, outputPath, params) {
     if (params.forceK100) {
         colorCmd = '-sProcessColorModel=DeviceGray -sColorConversionStrategy=Gray ';
     } else if (params.colorSpace === 'cmyk') {
-        colorCmd = '-sProcessColorModel=DeviceCMYK -sColorConversionStrategy=CMYK ';
+        colorCmd = '-sProcessColorModel=DeviceCMYK -sColorConversionStrategy=LeaveColorUnchanged ';
     }
     
     const textCmd = params.textToPath ? '-dNoOutputFonts ' : '';
