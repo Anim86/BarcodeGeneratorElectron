@@ -203,13 +203,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sync colors
         syncColors(bars);
 
-        el.colorInfoBox.style.display = 'block';
+        let hasWarning = false;
 
         if (!trans && el.contrastWarn) {
             const ratio = BarcodeService.getContrastRatio(bars, bg);
             if (ratio < 5) {
                 el.contrastWarn.textContent = window.i18n.t('contrast_warning', { ratio: ratio.toFixed(1) });
                 el.contrastWarn.style.display = 'block';
+                hasWarning = true;
             } else {
                 el.contrastWarn.style.display = 'none';
             }
@@ -221,8 +222,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el.cmykRasterWarning) {
             const format = getV('formatSelect');
             const isNoCmyk = format === 'png' || format === 'svg';
-            el.cmykRasterWarning.style.display = (mode === 'cmyk' && isNoCmyk) ? 'block' : 'none';
+            if (mode === 'cmyk' && isNoCmyk) {
+                el.cmykRasterWarning.style.display = 'block';
+                hasWarning = true;
+            } else {
+                el.cmykRasterWarning.style.display = 'none';
+            }
         }
+        
+        el.colorInfoBox.style.display = hasWarning ? 'block' : 'none';
     }
 
     function validateCompliance() {
@@ -873,9 +881,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (item.isValid) {
             let base = item.customFilename || item.code;
             displayFilename = `${base}.${ext}`;
-            if (color === 'cmyk' || color === 'grayscale') {
-                displayFilename = displayFilename.replace(`.${ext}`, `_${color}.${ext}`);
-            }
         } else {
             displayFilename = `<span style="color: var(--c-err); font-weight: 500;">${item.error}</span>`;
         }
@@ -1164,7 +1169,13 @@ document.addEventListener('DOMContentLoaded', () => {
             hriFormat: getV('hriPos') === 'incorporated' ? false : getC('hriFormatToggle', true),
             textToPath: getC('textToPathToggle', true),
             forceK100: getC('forceK100Toggle'),
-            format: getV('formatSelect', 'png')
+            format: getV('formatSelect', 'png'),
+            cmykValues: {
+                c: parseInt($('val-c') ? $('val-c').value : 0) || 0,
+                m: parseInt($('val-m') ? $('val-m').value : 0) || 0,
+                y: parseInt($('val-y') ? $('val-y').value : 0) || 0,
+                k: parseInt($('val-k') ? $('val-k').value : 0) || 0
+            }
         };
     }
 

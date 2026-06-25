@@ -818,13 +818,15 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(va
 .results__table-wrap {
     flex: 1;
     overflow-y: auto;
+    overflow-x: auto;
     position: relative;
 }
 
 .results-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
 }
 
 .results-table thead th {
@@ -838,6 +840,7 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(va
     color: var(--c-text-3);
     padding: 8px 16px;
     text-align: left;
+    white-space: nowrap;
     border-bottom: 1px solid var(--c-border);
     z-index: 2;
 }
@@ -858,6 +861,7 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: calc(va
     border-bottom: 1px solid var(--c-border-subtle);
     font-size: 12px;
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .results-table td code {

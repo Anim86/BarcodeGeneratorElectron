@@ -451,6 +451,21 @@ async function createTempPDF(svg, params) {
                 options.colorCallback = (color) => {
                     if (Array.isArray(color) && color.length === 3) {
                         const r = color[0], g = color[1], b = color[2];
+                        
+                        // Exact match for user's CMYK quadricromia if not using Force K100
+                        if (params.cmykValues && params.bars && !params.forceK100) {
+                            const hex = params.bars.replace('#', '');
+                            const barR = parseInt(hex.substring(0, 2), 16) || 0;
+                            const barG = parseInt(hex.substring(2, 4), 16) || 0;
+                            const barB = parseInt(hex.substring(4, 6), 16) || 0;
+                            
+                            // Tolerance for RGB rounding
+                            if (Math.abs(r - barR) <= 2 && Math.abs(g - barG) <= 2 && Math.abs(b - barB) <= 2) {
+                                return [params.cmykValues.c, params.cmykValues.m, params.cmykValues.y, params.cmykValues.k];
+                            }
+                        }
+                        
+                        // Default Fallback Math
                         let c = 1 - (r / 255);
                         let m = 1 - (g / 255);
                         let y = 1 - (b / 255);
