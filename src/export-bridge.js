@@ -47,6 +47,8 @@ window.ExportBridge = {
             colorSpace: params.colorSpace,
             textToPath: params.textToPath,
             forceK100: params.forceK100,
+            cmykValues: params.cmykValues,
+            bars: params.bars,
             filename: `${baseName}.${ext}`
         };
 
@@ -87,7 +89,9 @@ window.ExportBridge = {
             dpi: params.dpi,
             colorSpace: params.colorSpace,
             textToPath: params.textToPath,
-            forceK100: params.forceK100
+            forceK100: params.forceK100,
+            cmykValues: params.cmykValues,
+            bars: params.bars
         };
 
         try {
