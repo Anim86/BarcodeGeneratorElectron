@@ -449,8 +449,10 @@ async function createTempPDF(svg, params) {
             
             if (params.colorSpace === 'cmyk') {
                 options.colorCallback = (color) => {
-                    if (Array.isArray(color) && color.length === 3) {
-                        const r = color[0], g = color[1], b = color[2];
+                    if (Array.isArray(color) && Array.isArray(color[0]) && color[0].length === 3) {
+                        const rgb = color[0];
+                        const r = rgb[0], g = rgb[1], b = rgb[2];
+                        const opacity = color[1] !== undefined ? color[1] : 1;
                         
                         // Exact match for user's CMYK quadricromia if not using Force K100
                         if (params.cmykValues && params.bars && !params.forceK100) {
@@ -461,7 +463,7 @@ async function createTempPDF(svg, params) {
                             
                             // Tolerance for RGB rounding
                             if (Math.abs(r - barR) <= 2 && Math.abs(g - barG) <= 2 && Math.abs(b - barB) <= 2) {
-                                return [params.cmykValues.c, params.cmykValues.m, params.cmykValues.y, params.cmykValues.k];
+                                return [[params.cmykValues.c, params.cmykValues.m, params.cmykValues.y, params.cmykValues.k], opacity];
                             }
                         }
                         
@@ -471,13 +473,13 @@ async function createTempPDF(svg, params) {
                         let y = 1 - (b / 255);
                         let k = Math.min(c, m, y);
                         
-                        if (k === 1) return [0, 0, 0, 100]; // Pure K100
+                        if (k === 1) return [[0, 0, 0, 100], opacity]; // Pure K100
                         
                         c = Math.round(((c - k) / (1 - k)) * 100) || 0;
                         m = Math.round(((m - k) / (1 - k)) * 100) || 0;
                         y = Math.round(((y - k) / (1 - k)) * 100) || 0;
                         k = Math.round(k * 100);
-                        return [c, m, y, k];
+                        return [[c, m, y, k], opacity];
                     }
                     return color;
                 };
